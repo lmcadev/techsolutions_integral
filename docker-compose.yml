@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    ports:
+      - "8080:80"
+    # Uncomment if you want to override environment variables for Angular at runtime via a config.json pattern
+    # volumes:
+    #   - ./env/config.json:/usr/share/nginx/html/assets/config.json:ro
+    restart: unless-stopped
+
+  # Optional: dev service using ng serve (hot reload)
+  # dev:
+  #   image: node:20-alpine
+  #   working_dir: /workspace
+  #   command: sh -c "npm ci && npm run start -- --host 0.0.0.0"
+  #   volumes:
+  #     - .:/workspace
+  #   ports:
+  #     - "4200:4200"
+  #   environment:
+  #     - CHOKIDAR_USEPOLLING=true

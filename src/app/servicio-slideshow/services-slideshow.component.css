@@ -1,0 +1,16 @@
+.service-icon {
+  width: 10em;
+  height: 10em;
+  
+}
+
+.service-icon i {
+  font-size: 7em !important;
+  width: 7em;
+  height: 7em;
+  line-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+}

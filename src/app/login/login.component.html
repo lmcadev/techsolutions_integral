@@ -1,0 +1,43 @@
+
+<div class="d-flex justify-content-center align-items-center vh-100" style="background-color: #0D47A1;">
+  <div class="tarjeta p-4 shadow-lg" style="width: 60%; min-width: 480px; max-width: 600px; border-radius: 30px; background-color: #E8E9EB;">
+    <!-- Logo y titulo -->
+    <div class="d-flex align-items-center mb-3">
+      <!-- Logo -->
+      <img src="assets/logo.svg" alt="Techsolutions Integral" style="height: 50px; margin-right: 0.75rem;" />
+        </div>
+  <!-- Titulo login -->
+  <h3 class="text-center fw-bold mb-4 spline-sans" style="letter-spacing: 0.3rem;">LOGIN</h3>
+    <!-- Formulario login -->
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <div class="mb-3 d-flex justify-content-center">
+        <input
+          type="email"
+          class="form-control form-control-lg correo-input"
+          placeholder="CORREO"
+          [(ngModel)]="email"
+          name="email"
+          required
+        />
+      </div>
+      <div class="mb-4 d-flex justify-content-center">
+        <input
+          type="password"
+          class="form-control form-control-lg password-input"
+          placeholder="CONTRASEÑA"
+          [(ngModel)]="password"
+          name="password"
+          required
+        />
+      </div>
+      <div class="d-flex justify-content-center mb-3">
+        <button type="submit" class="btn btn-primary btn-lg" [disabled]="!loginForm.form.valid">
+          Ingresar
+        </button>
+      </div>
+      <div class="text-center">
+        <a href="#" class="underline-link">Recuperar contraseña</a>
+      </div>
+    </form>
+  </div>
+</div>
