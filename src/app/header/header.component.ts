@@ -9,5 +9,5 @@ import { RouterModule } from '@angular/router';
   imports: [RouterModule]
 })
 export class HeaderComponent {
-  // The header component contains the application logo and navigation links.
+  // El componente de encabezado contiene el logo de la aplicación y los enlaces de navegación.
 }

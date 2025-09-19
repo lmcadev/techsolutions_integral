@@ -11,7 +11,7 @@ import { FooterComponent } from '../footer/footer.component';
   styleUrls: ['./servicio-detalle.component.css']
 })
 export class ServicioDetalleComponent {
-  // Puede ser una clase de icono Bootstrap (ej: 'bi bi-cloud') o una URL de imagen
+  // Puede ser una clase de ícono de Bootstrap (ej: 'bi bi-cloud') o una URL de imagen
   imagen: string = 'bi bi-cloud text-white';
   nombre = 'Servicio de nube';
   precio = 100000;
@@ -24,9 +24,9 @@ export class ServicioDetalleComponent {
   ágil y confiable que se adapta al crecimiento de tu negocio. Además, contamos con protocolos 
   avanzados de protección y monitoreo continuo para asegurar la integridad de tu información.`;
 
-  // Determina si la propiedad `imagen` representa un icono de Bootstrap Icons
+  // Determina si la propiedad `imagen` representa un ícono de Bootstrap Icons
   get esIcono(): boolean {
-    // Heurística simple: si empieza por 'bi' o contiene 'bi-'
+  // Heurística simple: si empieza por 'bi' o contiene 'bi-'
     return this.imagen.startsWith('bi') || this.imagen.includes('bi-');
   }
 }

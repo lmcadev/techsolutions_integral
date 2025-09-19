@@ -22,7 +22,7 @@
   border: none;
   border-radius: 30px;
   background: var(--Backgroud, linear-gradient(51deg, #E8E9EB 6.47%, #E8E9EB 93.53%));
-  /* shadow background */
+  /* Fondo con sombra */
   box-shadow: 0 8px 24px 20px #0A2E73;
 }
 

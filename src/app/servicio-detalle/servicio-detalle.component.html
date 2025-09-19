@@ -1,15 +1,15 @@
 <div class="min-vh-100 d-flex justify-content-center align-items-start" style="background-color: #0D47A1;">
   <div class="bg-light rounded-4 my-4 p-4 w-100 contenedor-sombra" style="max-width: 1200px;">
-    <!-- Header -->
+  <!-- Encabezado -->
     <app-header></app-header>
 
-    <!-- Contenido principal -->
-    <section class="row align-items-start mt-4 g-4 background-color: #000000">
+  <!-- Contenido principal -->
+    <section class="row align-items-start mt-4 g-4">
       <div class="col-12 col-md-6 d-flex justify-content-center">
         <div class="rounded-4 overflow-hidden d-flex justify-content-center align-items-center " style="background-color: #1E88E5; width: 300px; height: 300px; position: relative;">
-          <!-- Badge de oferta/etiqueta -->
+          <!-- Insignia de oferta/etiqueta -->
           <span class="badge bg-dark" style="position: absolute; top: -10px; right: -10px;">%</span>
-          <!-- Imagen o icono dinamico -->
+          <!-- Imagen o ícono dinámico -->
           <ng-container *ngIf="esIcono; else imagenUrl">
             <i [class]="imagen + ' text-primary'" style="font-size: 160px;"></i>
           </ng-container>
@@ -27,7 +27,7 @@
       </div>
     </section>
 
-    <!-- Footer -->
+  <!-- Pie de página -->
     <app-footer></app-footer>
   </div>
 </div>
