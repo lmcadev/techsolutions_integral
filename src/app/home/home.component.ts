@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ServicesSlideshowComponent } from '../servicio-slideshow/services-slideshow.component';
+import { ServicesSlideshowComponent } from '../servicio-slideshow/servicios-slideshow.component';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
 

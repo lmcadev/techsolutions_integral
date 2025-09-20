@@ -7,8 +7,8 @@ import { RouterModule } from '@angular/router';
   selector: 'app-services-slideshow',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  templateUrl: './services-slideshow.component.html',
-  styleUrl: './services-slideshow.component.css'
+  templateUrl: './servicios-slideshow.component.html',
+  styleUrl: './servicios-slideshow.component.css'
 })
 export class ServicesSlideshowComponent implements OnInit, OnDestroy {
   // Ruta objetivo para el botón, configurable desde una sola variable

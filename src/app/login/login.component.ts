@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -10,10 +11,10 @@ export class LoginComponent {
   email: string = '';
   password: string = '';
 
+  constructor(private router: Router) {}
 
   onSubmit(): void {
-
-    console.log('Email:', this.email, 'Password:', this.password);
-
+    // Aquí podrías validar credenciales; por ahora, navega al dashboard si el formulario es válido
+    this.router.navigate(['/dashboard']);
   }
 }

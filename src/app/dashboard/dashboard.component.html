@@ -1,0 +1,42 @@
+<!--
+  Diseño del panel de control.  Se utilizan los mismos colores que en
+  otras páginas para mantener la coherencia visual.  La barra lateral
+  permite navegar a otras secciones y los cuadros del panel actúan
+  como accesos rápidos.
+-->
+<div class="min-vh-100 d-flex justify-content-center align-items-start" style="background-color: #004ba8;">
+  <div class="bg-light shadow rounded-4 my-4 p-4 w-100" style="max-width: 1200px;">
+    <!-- Encabezado común -->
+    <app-header></app-header>
+    <div class="row mt-4">
+      <!-- Barra lateral -->
+      <div class="col-12 col-md-3 mb-4 mb-md-0">
+        <app-sidebar></app-sidebar>
+      </div>
+      <!-- Contenido principal del panel -->
+      <div class="col-12 col-md-9 d-flex flex-wrap justify-content-center gap-4">
+        <!-- Cuadro Usuarios -->
+        <a routerLink="/usuarios" class="text-decoration-none">
+          <div class="panel-box d-flex flex-column align-items-center justify-content-center">
+            <span class="simbolo">#</span>
+            <span class="titulo-box mt-2">Usuarios</span>
+          </div>
+        </a>
+        <!-- Cuadro Servicios -->
+        <a routerLink="/servicios" class="text-decoration-none">
+          <div class="panel-box d-flex flex-column align-items-center justify-content-center">
+            <span class="simbolo">#</span>
+            <span class="titulo-box mt-2">Servicios</span>
+          </div>
+        </a>
+        <!-- Cuadro Pedidos (placeholder) -->
+        <div class="panel-box d-flex flex-column align-items-center justify-content-center">
+          <span class="simbolo">#</span>
+          <span class="titulo-box mt-2">Pedidos</span>
+        </div>
+      </div>
+    </div>
+    <!-- Pie de página común -->
+    <app-footer></app-footer>
+  </div>
+</div>

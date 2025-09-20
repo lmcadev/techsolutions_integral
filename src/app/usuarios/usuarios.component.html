@@ -1,0 +1,64 @@
+<!--
+  Página de administración de usuarios.  Permite listar, agregar,
+  editar y eliminar usuarios.  Se utiliza un formulario simple para
+  crear o modificar usuarios y una tabla para mostrarlos.
+-->
+<div class="min-vh-100 d-flex justify-content-center align-items-start" style="background-color: #004ba8;">
+  <div class="bg-light shadow rounded-4 my-4 p-4 w-100" style="max-width: 1200px;">
+    <!-- Encabezado común -->
+    <app-header></app-header>
+    <div class="row mt-4">
+      <!-- Barra lateral -->
+      <div class="col-12 col-md-3 mb-4 mb-md-0">
+        <app-sidebar></app-sidebar>
+      </div>
+      <!-- Contenido principal -->
+      <div class="col-12 col-md-9">
+        <h2 class="fw-bold mb-3">USUARIOS</h2>
+        <button class="btn btn-primary mb-3" (click)="mostrarFormularioAgregar()">Añadir usuario</button>
+        <!-- Formulario de alta/edición -->
+        <div *ngIf="mostrandoFormulario" class="card p-3 mb-3">
+          <h5 class="mb-3">{{ indiceEdicion !== null ? 'Editar usuario' : 'Nuevo usuario' }}</h5>
+          <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" [(ngModel)]="nuevoUsuario.nombre" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Correo</label>
+            <input type="email" class="form-control" [(ngModel)]="nuevoUsuario.correo" />
+          </div>
+          <div>
+            <button class="btn btn-primary me-2" (click)="indiceEdicion !== null ? guardarUsuario() : agregarUsuario()">
+              {{ indiceEdicion !== null ? 'Guardar' : 'Agregar' }}
+            </button>
+            <button class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+          </div>
+        </div>
+        <!-- Tabla de usuarios -->
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let usuario of usuarios; let i = index">
+                <td>{{ usuario.nombre }}</td>
+                <td>{{ usuario.correo }}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary me-2" (click)="editarUsuario(i)">Editar</button>
+                  <button class="btn btn-sm btn-danger" (click)="eliminarUsuario(i)">Eliminar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Pie de página -->
+    <app-footer></app-footer>
+  </div>
+</div>
