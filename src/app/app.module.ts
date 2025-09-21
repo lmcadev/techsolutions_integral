@@ -12,8 +12,8 @@ import { SidebarComponent } from './dashboard/componentes/sidebar/sidebar.compon
 import { HeaderComponent } from './componentes/header/header.component';
 import { HeaderComponentDashboard } from './dashboard/componentes/dashboard-header/header.componentDashboard';
 import { FooterComponent } from './componentes/footer/footer.component';
-import { UsuariosComponent } from './pages/usuarios/usuarios.component';
-import { ServiciosComponent } from './pages/servicios/servicios.component';
+import { UsuariosComponent } from './dashboard/Pages/usuarios/usuarios.component';
+import { ServiciosComponent } from './dashboard/Pages/servicios/servicios.component';
 
 @NgModule({
   declarations: [
