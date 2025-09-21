@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { ServicesSlideshowComponent } from '../servicio-slideshow/servicios-slideshow.component';
-import { HeaderComponent } from '../header/header.component';
-import { FooterComponent } from '../footer/footer.component';
+import { ServicesSlideshowComponent } from '../../componentes/servicio-slideshow/servicios-slideshow.component';
+import { HeaderComponent } from '../../componentes/header/header.component';
+import { FooterComponent } from '../../componentes/footer/footer.component';
 
 @Component({
   selector: 'app-home',

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { HeaderComponent } from '../header/header.component';
-import { FooterComponent } from '../footer/footer.component';
-import { SidebarComponent } from '../sidebar/sidebar.component';
+import { HeaderComponentDashboard } from '../../componentes/dashboard-header/header.componentDashboard';
+import { FooterComponent } from '../../../componentes/footer/footer.component';
+import { SidebarComponent } from '../../componentes/sidebar/sidebar.component';
 
 
 @Component({

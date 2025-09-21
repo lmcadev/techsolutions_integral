@@ -4,15 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
 import { AppComponent } from './app.component';
-import { LoginComponent } from './login/login.component';
-import { HomeComponent } from './home/home.component';
-import { ServicioDetalleComponent } from './servicio-detalle/servicio-detalle.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
-import { SidebarComponent } from './sidebar/sidebar.component';
-import { HeaderComponent } from './header/header.component';
-import { FooterComponent } from './footer/footer.component';
-import { UsuariosComponent } from './usuarios/usuarios.component';
-import { ServiciosComponent } from './servicios/servicios.component';
+import { LoginComponent } from './pages/login/login.component';
+import { HomeComponent } from './pages/home/home.component';
+import { ServicioDetalleComponent } from './pages/servicio-detalle/servicio-detalle.component';
+import { DashboardComponent } from './dashboard/Pages/dashboard-home/dashboard.component';
+import { SidebarComponent } from './dashboard/componentes/sidebar/sidebar.component';
+import { HeaderComponent } from './componentes/header/header.component';
+import { HeaderComponentDashboard } from './dashboard/componentes/dashboard-header/header.componentDashboard';
+import { FooterComponent } from './componentes/footer/footer.component';
+import { UsuariosComponent } from './pages/usuarios/usuarios.component';
+import { ServiciosComponent } from './pages/servicios/servicios.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { ServiciosComponent } from './servicios/servicios.component';
     FormsModule,
     // Componentes standalone usados por componentes declarados en este módulo
     HeaderComponent,
+    HeaderComponentDashboard,
     FooterComponent,
     HomeComponent,
     RouterModule.forRoot([

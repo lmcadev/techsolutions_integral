@@ -1,3 +1,12 @@
+/* Tamaño fijo para los íconos de los paneles del dashboard */
+.panel-box i {
+  font-size: 4em !important;
+  width: 4em;
+  height: 4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 /* Estilos para el panel de control.  Cada caja (panel-box) tiene un
  * fondo en degradado azul, bordes redondeados y sombra suave.  El
  * símbolo (#) se muestra centrado y grande. */
