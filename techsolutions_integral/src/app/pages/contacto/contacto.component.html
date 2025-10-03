@@ -1,0 +1,176 @@
+<div class="min-vh-100 d-flex justify-content-center align-items-start" style="background-color: #0D47A1;">
+  <div class="bg-light rounded-4 my-4 p-4 w-100 contenedor-sombra" style="max-width: 1200px;">
+    <!-- Encabezado -->
+    <app-header></app-header>
+
+    <!-- Título principal -->
+    <section class="text-center mt-5 mb-5">
+      <h1 class="fw-bold mb-3">CONTACTO</h1>
+      <p class="text-muted lead">Información del proyecto académico y equipo de desarrollo</p>
+    </section>
+
+    <!-- Información del proyecto académico -->
+    <section class="mb-5">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0">
+            <i class="bi bi-mortarboard me-2"></i>
+            Proyecto Académico
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <h5><i class="bi bi-book text-primary me-2"></i>Asignatura</h5>
+              <p class="mb-0">{{ proyectoInfo.asignatura }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <h5><i class="bi bi-people text-primary me-2"></i>Grupo</h5>
+              <p class="mb-0">{{ proyectoInfo.grupo }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <h5><i class="bi bi-person-badge text-primary me-2"></i>Profesor</h5>
+              <p class="mb-0">{{ proyectoInfo.profesor }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <h5><i class="bi bi-calendar text-primary me-2"></i>Año</h5>
+              <p class="mb-0">{{ proyectoInfo.anio }}</p>
+            </div>
+            <div class="col-12 mb-3">
+              <h5><i class="bi bi-building text-primary me-2"></i>Facultad</h5>
+              <p class="mb-0">{{ proyectoInfo.facultad }}</p>
+            </div>
+            <div class="col-12">
+              <h5><i class="bi bi-bank text-primary me-2"></i>Institución</h5>
+              <p class="mb-0 fw-bold">{{ proyectoInfo.institucion }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Equipo de desarrollo -->
+    <section class="mb-5">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-success text-white">
+          <h3 class="mb-0">
+            <i class="bi bi-people-fill me-2"></i>
+            Equipo de Desarrollo
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-lg-6" *ngFor="let integrante of integrantes; let i = index">
+              <div class="d-flex align-items-center mb-3 p-3 bg-light rounded">
+                <div class="me-3">
+                  <div class="avatar-circle bg-success text-white d-flex align-items-center justify-content-center">
+                    {{ integrante.nombre.split(' ')[0][0] }}{{ integrante.nombre.split(' ')[1]?.[0] }}
+                  </div>
+                </div>
+                <div class="flex-grow-1">
+                  <h6 class="mb-1 fw-bold">{{ integrante.nombre }}</h6>
+                  <small class="text-muted">
+                    <i class="bi bi-code-slash me-1"></i>
+                    {{ integrante.rol }}
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tecnologías utilizadas -->
+    <section class="mb-5">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-info text-white">
+          <h3 class="mb-0">
+            <i class="bi bi-tools me-2"></i>
+            Tecnologías Utilizadas
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 col-sm-6" *ngFor="let tech of tecnologias">
+              <div class="text-center p-3 mb-3 bg-light rounded tech-card">
+                <div class="tech-icon mb-3">
+                  <i [class]="tech.icono" class="display-4 text-info"></i>
+                </div>
+                <h6 class="fw-bold mb-2">{{ tech.nombre }}</h6>
+                <small class="text-muted">{{ tech.descripcion }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Información de contacto del proyecto -->
+    <section class="mb-5">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-warning text-dark">
+          <h3 class="mb-0">
+            <i class="bi bi-info-circle me-2"></i>
+            Información del Sistema
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="feature-item">
+                <i class="bi bi-globe text-warning me-3"></i>
+                <div>
+                  <h6 class="mb-1">TechSolutions Integral</h6>
+                  <small class="text-muted">Sistema integral de gestión de servicios tecnológicos</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="feature-item">
+                <i class="bi bi-shield-check text-warning me-3"></i>
+                <div>
+                  <h6 class="mb-1">Seguridad JWT</h6>
+                  <small class="text-muted">Autenticación segura con JSON Web Tokens</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="feature-item">
+                <i class="bi bi-cart-check text-warning me-3"></i>
+                <div>
+                  <h6 class="mb-1">Carrito de Compras</h6>
+                  <small class="text-muted">Sistema completo de gestión de pedidos</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="feature-item">
+                <i class="bi bi-graph-up text-warning me-3"></i>
+                <div>
+                  <h6 class="mb-1">Dashboard Administrativo</h6>
+                  <small class="text-muted">Panel de control para gestión de servicios y usuarios</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer académico -->
+    <section class="text-center p-4 bg-light rounded mb-4">
+      <p class="mb-2">
+        <i class="bi bi-award text-primary me-2"></i>
+        <strong>Proyecto Academico - {{ proyectoInfo.anio }}</strong>
+      </p>
+      <p class="text-muted mb-0">
+        Desarrollado para 
+        <strong>{{ proyectoInfo.institucion }}</strong>
+      </p>
+    </section>
+
+    <!-- Pie de página -->
+    <app-footer></app-footer>
+  </div>
+</div>

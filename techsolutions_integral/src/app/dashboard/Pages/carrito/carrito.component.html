@@ -1,0 +1,96 @@
+<div class="carrito-container d-flex justify-content-center align-items-start">
+  <div class="carrito-card shadow my-4 p-4 w-100">
+    <!-- Encabezado común -->
+    <app-headerDashboard></app-headerDashboard>
+    
+    <div class="row mt-4">
+      <!-- Barra lateral -->
+      <div class="col-12 col-md-3 mb-4 mb-md-0">
+        <app-sidebar></app-sidebar>
+      </div>
+      
+      <!-- Contenido principal -->
+      <div class="col-12 col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="fw-bold mb-0">MI CARRITO</h2>
+          <button 
+            *ngIf="!isLoading && carrito.length > 0"
+            class="btn btn-outline-danger btn-sm"
+            (click)="vaciarCarrito()">
+            <i class="bi bi-trash me-2"></i>Vaciar Carrito
+          </button>
+        </div>
+        
+        <div *ngIf="isLoading" class="text-center py-4">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+        
+        <div *ngIf="!isLoading && carrito.length === 0" class="alert alert-info">
+          <i class="bi bi-cart-x me-2"></i>
+          Tu carrito está vacío
+        </div>
+        
+        <div *ngIf="!isLoading && carrito.length > 0">
+          <!-- Items del carrito -->
+          <div class="row">
+            <div class="col-12 col-lg-8">
+              <div *ngFor="let item of carrito; let i = index" class="item-carrito">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-1">{{ item.nombre }}</h5>
+                    <p class="text-muted mb-2">Precio unitario: ${{ item.precio }}</p>
+                    <div class="d-flex align-items-center">
+                      <label class="me-2">Cantidad:</label>
+                      <input 
+                        type="number" 
+                        class="form-control cantidad-input me-3" 
+                        [value]="item.cantidad"
+                        (change)="actualizarCantidad(i, $any($event.target).value)"
+                        min="1"
+                        style="width: 80px;">
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <p class="fw-bold mb-2">Total: ${{ item.precio * item.cantidad }}</p>
+                    <button class="btn btn-sm btn-danger" (click)="eliminarItem(i)">
+                      <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Resumen del pedido -->
+            <div class="col-12 col-lg-4">
+              <div class="total-section sticky-top">
+                <h4 class="mb-3">Resumen del Pedido</h4>
+                <div class="d-flex justify-content-between mb-2">
+                  <span>Subtotal:</span>
+                  <span>${{ total }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span>Impuestos:</span>
+                  <span>${{ (total * 0.16).toFixed(2) }}</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-3">
+                  <strong>Total:</strong>
+                  <strong>${{ (total * 1.16).toFixed(2) }}</strong>
+                </div>
+                <button class="btn btn-primary w-100" (click)="procederAlPago()">
+                  <i class="bi bi-credit-card me-2"></i>
+                  Proceder al Pago
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pie de página -->
+    <app-footer></app-footer>
+  </div>
+</div>

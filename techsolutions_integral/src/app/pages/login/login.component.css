@@ -1,0 +1,53 @@
+
+.correo-input {
+  width: 80%;
+}
+
+.password-input {
+  width: 80%;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;700&display=swap');
+
+.spline-sans {
+  font-family: 'Spline Sans' !important;
+}
+
+:host {
+  display: block;
+}
+
+
+.tarjeta {
+  border: none;
+  border-radius: 30px;
+  background: var(--Backgroud, linear-gradient(51deg, #E8E9EB 6.47%, #E8E9EB 93.53%));
+  /* Fondo con sombra */
+  box-shadow: 0 8px 24px 20px #0A2E73;
+}
+
+
+.form-control {
+  border-radius: 0.5rem;
+  height: 3rem;
+  font-size: 1rem;
+}
+
+
+.btn-primary {
+  background: linear-gradient(90deg, #0f74d8 0%, #0058b8 100%);
+  border: none;
+  border-radius: 0.5rem;
+  width: 60%;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(90deg, #0058b8 0%, #0f74d8 100%);
+}
+
+a.underline-link {
+  text-decoration: underline;
+}
+a.text-decoration-none:hover {
+  text-decoration: underline;
+}

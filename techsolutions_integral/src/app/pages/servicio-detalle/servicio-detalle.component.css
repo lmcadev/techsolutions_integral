@@ -1,0 +1,7 @@
+:host{display:block;font-family:'Spline Sans',sans-serif}
+
+/* Reutiliza sombra del home */
+.contenedor-sombra{box-shadow:0 8px 24px 20px #0A2E73}
+
+.btn-primary{background:linear-gradient(90deg,#1E88E5 0%,#42A5F5 100%)!important;border:none!important;border-radius:20rem!important;box-shadow:-2px 5px 8px 5px rgba(0,0,0,.25),0 1px 4px 0 rgba(0,0,0,.08) inset}
+.btn-primary:hover{background:linear-gradient(90deg,#0058b8 0%,#0f74d8 100%)!important}

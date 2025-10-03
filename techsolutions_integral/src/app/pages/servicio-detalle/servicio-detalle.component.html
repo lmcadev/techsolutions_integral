@@ -1,0 +1,73 @@
+<div class="min-vh-100 d-flex justify-content-center align-items-start" style="background-color: #0D47A1;">
+  <div class="bg-light rounded-4 my-4 p-4 w-100 contenedor-sombra" style="max-width: 1200px;">
+    <!-- Encabezado -->
+    <app-header></app-header>
+
+    <!-- Loading -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando servicio...</span>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error" class="alert alert-danger mt-4">
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      {{ error }}
+      <div class="mt-3">
+        <button class="btn btn-outline-primary" (click)="volver()">
+          <i class="bi bi-arrow-left me-2"></i>Volver al inicio
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <section *ngIf="!isLoading && !error && servicio" class="row align-items-start mt-4 g-4">
+      <div class="col-12 col-md-6 d-flex justify-content-center">
+        <div class="rounded-4 overflow-hidden d-flex justify-content-center align-items-center" 
+             style="background-color: #1E88E5; width: 300px; height: 300px; position: relative;">
+          <!-- Insignia de stock -->
+          <span *ngIf="!servicio.stock" class="badge bg-danger" style="position: absolute; top: 10px; right: 10px;">
+            Agotado
+          </span>
+          <span *ngIf="servicio.stock" class="badge bg-success" style="position: absolute; top: 10px; right: 10px;">
+            Disponible
+          </span>
+          
+          <!-- Ícono del servicio -->
+          <i class="bi {{ servicio.icono }} text-white" style="font-size: 160px;"></i>
+        </div>
+      </div>
+      
+      <div class="col-12 col-md-6">
+        <h1 class="fw-bold mb-3">{{ servicio.nombre }}</h1>
+        <div class="mb-2">
+          <span class="h3  fw-bold">${{ servicio.precio }}</span>
+        </div>
+        <div class="mb-4">
+          <span class="badge" [class]="servicio.stock ? 'bg-success' : 'bg-danger'">
+            {{ servicio.stock ? 'En Stock' : 'Agotado' }}
+          </span>
+        </div>
+        
+        <button 
+          class="btn btn-primary btn-lg mb-4" 
+          [disabled]="!servicio.stock"
+          (click)="agregarAlCarrito()">
+          <i class="bi bi-cart-plus me-2"></i>
+          {{ servicio.stock ? 'Añadir al carrito' : 'No disponible' }}
+        </button>
+        
+        
+        
+        <div class="mt-4">
+          <h5>Descripción:</h5>
+          <p class="text-muted" style="max-width: 640px;">{{ servicio.descripcion }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pie de página -->
+    <app-footer></app-footer>
+  </div>
+</div>

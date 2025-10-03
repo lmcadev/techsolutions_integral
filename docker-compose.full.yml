@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: techsolutions_backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - PGHOST=db
+      - PGPORT=5432
+      - PGUSER=techsolutions
+      - PGPASSWORD=techsolutions_pass
+      - PGDATABASE=techsolutions_db
+      - DATABASE_URL=postgres://techsolutions:techsolutions_pass@db:5432/techsolutions_db
+      - JWT_SECRET=techsolutions_jwt_secret_production_2025
+      - JWT_EXPIRES_IN=7d
+      - FRONTEND_URL=http://localhost:8080
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
+    networks:
+      - techsolutions_network
+    restart: unless-stopped
+
+  # Frontend Angular
+  frontend:
+    build:
+      context: ./techsolutions_integral
+      dockerfile: Dockerfile
+    container_name: techsolutions_frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - techsolutions_network
+    restart: unless-stopped
+
+  # PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: techsolutions_db
+    environment:
+      - POSTGRES_USER=techsolutions
+      - POSTGRES_PASSWORD=techsolutions_pass
+      - POSTGRES_DB=techsolutions_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - techsolutions_network
+    restart: unless-stopped
+
+networks:
+  techsolutions_network:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local

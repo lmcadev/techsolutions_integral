@@ -1,0 +1,188 @@
+<!--
+  Página de gestión de servicios.  Permite listar, agregar, editar y
+  eliminar servicios.  Cada servicio tiene un nombre y una descripción.
+-->
+<div class="min-vh-100 d-flex justify-content-center align-items-start" style="background-color: #004ba8;">
+  <div class="bg-light shadow rounded-4 my-4 p-4 w-100" style="max-width: 1200px;">
+    <!-- Encabezado -->
+    <app-headerDashboard></app-headerDashboard>
+    <div class="row mt-4">
+      <!-- Barra lateral -->
+      <div class="col-12 col-md-3 mb-4 mb-md-0">
+        <app-sidebar></app-sidebar>
+      </div>
+      <!-- Contenido principal -->
+      <div class="col-12 col-md-9">
+        <h2 class="fw-bold mb-3">SERVICIOS</h2>
+        <button class="btn btn-primary mb-3" (click)="mostrarFormularioAgregar()">Añadir servicio</button>
+        <!-- Formulario de alta/edición -->
+        <div *ngIf="mostrandoFormulario" class="card p-4 mb-3">
+          <h5 class="mb-4">
+            <i class="bi bi-plus-circle me-2" *ngIf="indiceEdicion === null"></i>
+            <i class="bi bi-pencil me-2" *ngIf="indiceEdicion !== null"></i>
+            {{ indiceEdicion !== null ? 'Editar servicio' : 'Nuevo servicio' }}
+          </h5>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                <i class="bi bi-tag me-1"></i>Nombre <span class="text-danger">*</span>
+              </label>
+              <input type="text" class="form-control" [(ngModel)]="nuevoServicio.nombre" 
+                     placeholder="Ej: Servicio de hosting" required />
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                <i class="bi bi-currency-dollar me-1"></i>Precio <span class="text-danger">*</span>
+              </label>
+              <input type="number" class="form-control" [(ngModel)]="nuevoServicio.precio" 
+                     min="0" step="0.01" placeholder="0.00" required />
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                <i class="bi bi-icons me-1"></i>Ícono
+              </label>
+              <select class="form-select" [(ngModel)]="nuevoServicio.icono">
+                <option *ngFor="let icono of iconosDisponibles" [value]="icono">
+                  {{ icono }}
+                </option>
+              </select>
+              <div class="mt-2">
+                <small class="text-muted">Vista previa: </small>
+                <i class="bi {{ nuevoServicio.icono }} text-primary ms-2" style="font-size: 1.5rem;"></i>
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Estado</label>
+              <div class="form-check form-switch mt-2">
+                <input class="form-check-input" type="checkbox" id="stockCheck" 
+                       [(ngModel)]="nuevoServicio.stock">
+                <label class="form-check-label" for="stockCheck">
+                  <i class="bi bi-box me-1"></i>En Stock
+                </label>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="activoCheck" 
+                       [(ngModel)]="nuevoServicio.activo">
+                <label class="form-check-label" for="activoCheck">
+                  <i class="bi bi-eye me-1"></i>Servicio Activo
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">
+              <i class="bi bi-text-paragraph me-1"></i>Descripción <span class="text-danger">*</span>
+            </label>
+            <textarea rows="4" class="form-control" [(ngModel)]="nuevoServicio.descripcion"
+                      placeholder="Describe el servicio que ofreces..." required></textarea>
+          </div>
+          
+          <div class="d-flex justify-content-end gap-2">
+            <button class="btn btn-secondary" (click)="cancelar()">
+              <i class="bi bi-x-circle me-2"></i>Cancelar
+            </button>
+            <button class="btn btn-primary" 
+                    [disabled]="isLoading || !nuevoServicio.nombre.trim() || !nuevoServicio.descripcion.trim() || nuevoServicio.precio === undefined || nuevoServicio.precio < 0"
+                    (click)="indiceEdicion !== null ? guardarServicio() : agregarServicio()">
+              <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+              <i *ngIf="!isLoading" class="bi bi-check-circle me-2"></i>
+              {{ indiceEdicion !== null ? 'Guardar Cambios' : 'Crear Servicio' }}
+            </button>
+          </div>
+        </div>
+        <!-- Estados de carga y error -->
+        <div *ngIf="isLoading && !mostrandoFormulario" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando servicios...</span>
+          </div>
+        </div>
+
+        <div *ngIf="error" class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+          <button class="btn btn-sm btn-outline-danger ms-2" (click)="cargarServicios()">
+            <i class="bi bi-arrow-clockwise me-1"></i>Reintentar
+          </button>
+        </div>
+
+        <!-- Tabla de servicios -->
+        <div *ngIf="!isLoading || mostrandoFormulario" class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>Ícono</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Estado</th>
+                <th>Descripción</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let servicio of servicios; let i = index" 
+                  [class.table-warning]="!servicio.activo">
+                <td class="text-center">
+                  <i class="bi {{ servicio.icono }} text-primary" style="font-size: 1.5rem;"></i>
+                </td>
+                <td>
+                  <strong>{{ servicio.nombre }}</strong>
+                  <small *ngIf="!servicio.activo" class="text-muted d-block">
+                    <i class="bi bi-eye-slash me-1"></i>Inactivo
+                  </small>
+                </td>
+                <td>
+                  <span class="fw-bold text-success">${{ servicio.precio }}</span>
+                </td>
+                <td>
+                  <span class="badge" [class]="servicio.stock ? 'bg-success' : 'bg-danger'">
+                    <i class="bi" [class]="servicio.stock ? 'bi-check-circle' : 'bi-x-circle'"></i>
+                    {{ servicio.stock ? 'Disponible' : 'Agotado' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [class]="servicio.activo ? 'bg-primary' : 'bg-secondary'">
+                    <i class="bi" [class]="servicio.activo ? 'bi-eye' : 'bi-eye-slash'"></i>
+                    {{ servicio.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="text-truncate d-block" style="max-width: 200px;" 
+                        [title]="servicio.descripcion">
+                    {{ servicio.descripcion }}
+                  </span>
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-outline-primary" (click)="editarServicio(i)"
+                            [disabled]="isLoading">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" (click)="eliminarServicio(i)"
+                            [disabled]="isLoading">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="servicios.length === 0 && !isLoading">
+                <td colspan="7" class="text-center text-muted py-4">
+                  <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                  No hay servicios registrados
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Pie de página -->
+    <app-footer></app-footer>
+  </div>
+</div>

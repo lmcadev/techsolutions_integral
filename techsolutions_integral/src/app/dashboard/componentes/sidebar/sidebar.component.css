@@ -1,0 +1,32 @@
+/* Estilos para la barra lateral del panel.  La barra tiene un ancho
+ * fijo y ocupa toda la altura del contenedor padre.  Cada elemento de
+ * navegación es un enlace en bloque.  La clase `active` se aplica
+ * automáticamente al enlace que coincide con la ruta actual. */
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.sidebar {
+  background-color: #e9ecef;
+  border-right: 1px solid #ced4da;
+  min-height: calc(100vh - 4rem); /* espacio para header y márgenes */
+}
+
+.sidebar-item {
+  color: #495057;
+  text-decoration: none;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-item.active {
+  background-color: #0d6efd;
+  color: #fff;
+  border-left-color: #0d6efd;
+}
+
+.sidebar-item:hover {
+  background-color: #dae0e5;
+}

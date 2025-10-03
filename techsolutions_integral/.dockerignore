@@ -1,0 +1,15 @@
+node_modules
+.git
+.gitignore
+Dockerfile*
+**/.DS_Store
+**/*.log
+npm-debug.log*
+yarn-error.log
+**/.angular
+**/.vscode
+**/coverage
+**/dist
+**/tmp
+**/e2e
+**/*.tsbuildinfo

@@ -1,0 +1,21 @@
+/* Estilos específicos para la gestión de servicios. */
+
+.card {
+  background-color: #f8f9fa;
+  border: none;
+  border-radius: 0.75rem;
+}
+
+.table thead th {
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, #0f74d8 0%, #0058b8 100%) !important;
+  border: none !important;
+}
+
+.btn-secondary {
+  background-color: #6c757d !important;
+  border: none !important;
+}

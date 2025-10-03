@@ -1,0 +1,76 @@
+<div class="ordenes-container d-flex justify-content-center align-items-start">
+  <div class="ordenes-card shadow my-4 p-4 w-100">
+    <!-- Encabezado común -->
+    <app-headerDashboard></app-headerDashboard>
+    
+    <div class="row mt-4">
+      <!-- Barra lateral -->
+      <div class="col-12 col-md-3 mb-4 mb-md-0">
+        <app-sidebar></app-sidebar>
+      </div>
+      
+      <!-- Contenido principal -->
+      <div class="col-12 col-md-9">
+        <h2 class="fw-bold mb-3">MIS ÓRDENES</h2>
+        
+        <div *ngIf="isLoading" class="text-center py-4">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+        
+        <div *ngIf="error" class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          {{ error }}
+        </div>
+        
+        <div *ngIf="!isLoading && ordenes.length === 0" class="alert alert-info">
+          <i class="bi bi-inbox me-2"></i>
+          No tienes órdenes registradas
+        </div>
+        
+        <div *ngIf="!isLoading && ordenes.length > 0">
+          <div *ngFor="let orden of ordenes" class="orden-item">
+            <div class="orden-header">
+              <div class="row align-items-center">
+                <div class="col-md-3">
+                  <strong>Orden #{{ orden.id }}</strong>
+                </div>
+                <div class="col-md-3">
+                  <small class="text-muted">{{ orden.fecha | date:'dd/MM/yyyy' }}</small>
+                </div>
+                <div class="col-md-3">
+                  <span [class]="getEstadoClass(orden.estado)">{{ orden.estado }}</span>
+                </div>
+                <div class="col-md-3 text-end">
+                  <strong>${{ orden.total.toFixed(2) }}</strong>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-8">
+                <h6>Servicios:</h6>
+                <div class="item-list">
+                  <div *ngFor="let item of orden.items" class="d-flex justify-content-between align-items-center mb-1">
+                    <span>{{ item.nombre }}</span>
+                    <span class="text-muted">{{ item.cantidad }}x ${{ item.precio }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 d-flex align-items-center justify-content-end">
+                <button class="btn btn-outline-primary btn-sm" (click)="verDetalle(orden)">
+                  <i class="bi bi-eye me-1"></i>
+                  Ver Detalle
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pie de página -->
+    <app-footer></app-footer>
+  </div>
+</div>

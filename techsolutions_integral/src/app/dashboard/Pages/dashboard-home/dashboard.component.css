@@ -1,0 +1,54 @@
+/* Grid de 2 columnas para los paneles del dashboard */
+.dashboard-panels-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  justify-items: center;
+}
+
+@media (max-width: 600px) {
+  .dashboard-panels-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+}
+/* Tamaño fijo para los íconos de los paneles del dashboard */
+.panel-box i {
+  font-size: 4em !important;
+  width: 4em;
+  height: 4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Estilos para el panel de control.  Cada caja (panel-box) tiene un
+ * fondo en degradado azul, bordes redondeados y sombra suave.  El
+ * símbolo (#) se muestra centrado y grande. */
+
+.panel-box {
+  width: 180px;
+  height: 180px;
+  background: linear-gradient(90deg, #0f74d8 0%, #0058b8 100%);
+  border-radius: 1rem;
+  color: #fff;
+  transition: transform 0.2s ease;
+  text-align: center;
+  box-shadow: -10px 10px 30px 10px rgba(0, 0, 0, 0.25);
+}
+
+.panel-box:hover {
+  transform: translateY(-4px);
+}
+
+.panel-box .simbolo {
+  font-size: 4rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.panel-box .titulo-box {
+  font-size: 1rem;
+  text-transform: uppercase;
+  color: #fff;
+  letter-spacing: 0.05rem;
+}

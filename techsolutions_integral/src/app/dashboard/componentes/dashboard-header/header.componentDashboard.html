@@ -1,0 +1,26 @@
+<header class="d-flex align-items-center justify-content-between">
+  <div class="d-flex align-items-center">
+    <img src="assets/logo.svg" alt="Techsolutions Integral logo" class="me-2" style="height: 4em;">
+    <div class="fw-bold lh-sm small-text d-none d-md-block">
+    </div>
+  </div>
+
+  <!-- Informacion del usuario y configuracion en escritorio -->
+  <div class="d-flex align-items-center">
+    <div class="me-3 d-none d-md-block" *ngIf="currentUser">
+      <small class="text-muted">Bienvenido,</small>
+      <div class="fw-bold">{{ currentUser.nombre }}</div>
+      <small class="text-muted">{{ currentUser.correo }}</small>
+    </div>
+    
+    <!--cerrar sesion -->
+    <button 
+      type="button" 
+      class="btn btn-outline-danger" 
+      (click)="logout()"
+      title="Cerrar Sesión"
+      aria-label="Cerrar Sesión">
+      <i class="bi bi-door-open"></i>
+    </button>
+  </div>
+</header>

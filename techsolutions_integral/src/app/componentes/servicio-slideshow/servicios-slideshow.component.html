@@ -1,0 +1,31 @@
+<section class="mt-5">
+	<h2 class="fw-bold text-center mb-4">SERVICIOS</h2>
+	
+	<div *ngIf="isLoading" class="text-center py-4">
+		<div class="spinner-border text-primary" role="status">
+			<span class="visually-hidden">Cargando servicios...</span>
+		</div>
+	</div>
+	
+	<div *ngIf="error" class="alert alert-warning text-center">
+		<i class="bi bi-exclamation-triangle me-2"></i>
+		{{ error }}
+	</div>
+	
+	<div *ngIf="!isLoading && !error" class="d-flex justify-content-center align-items-center services">
+		<ng-container *ngFor="let servicio of serviciosVisibles">
+			<div class="mx-2 mb-3 text-center service-item clickable-service" 
+				 (click)="onServicioClick(servicio)"
+				 title="Ver detalles de {{ servicio.nombre }}">
+				<div class="service-icon bg-primary rounded-4 d-flex justify-content-center align-items-center">
+					<i class="bi {{servicio.icono}} text-white" style="font-size: 120px;"></i>
+				</div>
+				<div class="mt-2 fw-medium">{{servicio.nombre}}</div>
+				<div class="service-overlay">
+					<i class="bi bi-eye text-white" style="font-size: 24px;"></i>
+					<div class="mt-1 text-white small">Ver detalles</div>
+				</div>
+			</div>
+		</ng-container>
+	</div>
+</section>

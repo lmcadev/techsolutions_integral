@@ -1,0 +1,45 @@
+.ordenes-container {
+  background-color: #004ba8;
+  min-height: 100vh;
+}
+
+.ordenes-card {
+  background-color: white;
+  border-radius: 15px;
+  max-width: 1200px;
+}
+
+.orden-item {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  padding: 20px;
+  transition: box-shadow 0.2s;
+}
+
+.orden-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.orden-header {
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.item-list {
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.btn-primary {
+  background-color: #004ba8;
+  border-color: #004ba8;
+}
+
+.btn-primary:hover {
+  background-color: #003a84;
+  border-color: #003a84;
+}

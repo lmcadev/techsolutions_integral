@@ -1,0 +1,67 @@
+
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+header {
+  padding: 1rem 1.5rem;
+}
+
+
+
+.nav-link {
+  color: #000;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+
+.small-text {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+
+/* Tamaño de iconos en acciones de escritorio (login y carrito) */
+header .d-none.d-md-flex .btn i {
+  font-size: 1em !important;
+  width: 1.5em;
+  height: 1.5em;
+  line-height: 1.5em;
+  display: inline-block;
+}
+
+/* Separación entre botones y margen superior en desktop */
+header .d-none.d-md-flex.align-items-center.gap-2 {
+  gap: 1px !important; /* 20px entre botones */
+  margin-top: 1px;     /* 30px desde el borde superior */
+}
+
+/* Estilos para el botón de logout */
+.btn-outline-danger {
+  border: 2px solid #dc3545;
+  color: #dc3545;
+  background-color: transparent;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: white;
+  transform: scale(1.05);
+}
+
+.btn-outline-danger:focus {
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.btn-outline-danger i {
+  font-size: 1.2rem;
+}

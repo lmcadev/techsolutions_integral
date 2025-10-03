@@ -1,0 +1,40 @@
+<header class="d-flex align-items-center justify-content-between">
+  <div class="d-flex align-items-center">
+    <img src="assets/logo.svg" alt="Techsolutions Integral logo" class="me-2" style="height: 4em;">
+    <div class="fw-bold lh-sm small-text d-none d-md-block">
+    </div>
+  </div>
+  <nav class="d-none d-md-flex">
+    <a routerLink="/" class="nav-link px-3">Home</a>
+    <a routerLink="/services" class="nav-link px-3">Servicios</a>
+    <a routerLink="/contact" class="nav-link px-3">Contacto</a>
+  </nav>
+  <!-- Configuración en escritorio -->
+  <div class="d-none d-md-flex align-items-center gap-2">
+    <a routerLink="/login" aria-label="Iniciar sesión" class="btn">
+      <i class="bi bi-person-fill"></i>
+    </a>
+    <a routerLink="/carrito" aria-label="Carrito" class="btn position-relative">
+      <i class="bi bi-cart"></i>
+      <span *ngIf="cantidadCarrito > 0" 
+            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+        {{ cantidadCarrito }}
+        <span class="visually-hidden">items en carrito</span>
+      </span>
+    </a>
+  </div>
+  <div class="d-flex d-md-none">
+  <!-- Configuración para móviles -->
+    <a routerLink="/login" aria-label="Iniciar sesión" class="me-2"><i class="bi bi-person" style="font-size: 1.4rem;"></i></a>
+    <a routerLink="/carrito" aria-label="Carrito" class="me-2 position-relative">
+      <i class="bi bi-cart" style="font-size: 1.4rem;"></i>
+      <span *ngIf="cantidadCarrito > 0" 
+            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+            style="font-size: 0.6rem;">
+        {{ cantidadCarrito }}
+        <span class="visually-hidden">items en carrito</span>
+      </span>
+    </a>
+    <i class="bi bi-list" style="font-size: 1.5rem;"></i>
+  </div>
+</header>
