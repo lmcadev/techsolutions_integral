@@ -155,7 +155,8 @@ jobs:
               - PGUSER=${{ secrets.DB_USER }}
               - PGPASSWORD=${{ secrets.DB_PASSWORD }}
               - PGDATABASE=${{ secrets.DB_NAME }}
-              - DATABASE_URL=postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@db:5432/${{ secrets.DB_NAME }}
+              # DATABASE_URL con caracteres especiales problemáticos - usar variables individuales
+              # - DATABASE_URL=postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@db:5432/${{ secrets.DB_NAME }}
               - JWT_SECRET=${{ secrets.JWT_SECRET }}
               - JWT_EXPIRES_IN=7d
               - FRONTEND_URL=https://${{ env.DOMAIN }}
