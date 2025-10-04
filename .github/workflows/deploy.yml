@@ -255,18 +255,25 @@ jobs:
         echo "Token de Portainer obtenido exitosamente"
         
         # Verificar si el stack existe
-        STACK_ID=$(curl -s -X GET "$PORTAINER_URL/api/stacks" \
-          -H "Authorization: Bearer $ACCESS_TOKEN" \
-          | jq -r '.[] | select(.Name == "${{ env.PORTAINER_STACK_NAME }}") | .Id')
+        echo "Listando stacks existentes..."
+        STACKS_LIST=$(curl -s -X GET "$PORTAINER_URL/api/stacks" \
+          -H "Authorization: Bearer $ACCESS_TOKEN")
+        echo "Stacks encontrados: $STACKS_LIST"
+        
+        STACK_ID=$(echo "$STACKS_LIST" | jq -r '.[] | select(.Name == "${{ env.PORTAINER_STACK_NAME }}") | .Id')
+        echo "Stack ID encontrado: $STACK_ID"
         
         # Preparar el archivo docker-compose como string JSON
+        echo "Preparando contenido del docker-compose..."
         DOCKER_COMPOSE_CONTENT=$(cat docker-compose.portainer.yml | jq -Rs .)
         
         if [ "$STACK_ID" = "" ]; then
           echo "Creando nuevo stack en Portainer..."
+          echo "Nombre del stack: ${{ env.PORTAINER_STACK_NAME }}"
+          echo "Endpoint ID: ${{ secrets.PORTAINER_ENDPOINT_ID }}"
           
           # Crear nuevo stack
-          RESPONSE=$(curl -s -X POST "$PORTAINER_URL/api/stacks" \
+          RESPONSE=$(curl -s -w "%{http_code}" -X POST "$PORTAINER_URL/api/stacks" \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{
@@ -275,20 +282,43 @@ jobs:
               \"EndpointId\": ${{ secrets.PORTAINER_ENDPOINT_ID }}
             }")
           
-          NEW_STACK_ID=$(echo $RESPONSE | jq -r .Id)
+          HTTP_STATUS="${RESPONSE: -3}"
+          RESPONSE_BODY="${RESPONSE%???}"
+          
+          echo "Status creación: $HTTP_STATUS"
+          echo "Respuesta creación: $RESPONSE_BODY"
+          
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "Error creando stack (Status: $HTTP_STATUS)"
+            echo "Respuesta completa: $RESPONSE_BODY"
+            exit 1
+          fi
+          
+          NEW_STACK_ID=$(echo "$RESPONSE_BODY" | jq -r .Id)
           echo "Stack creado con ID: $NEW_STACK_ID"
           
         else
           echo "Actualizando stack existente (ID: $STACK_ID)..."
           
           # Actualizar stack existente
-          curl -s -X PUT "$PORTAINER_URL/api/stacks/$STACK_ID" \
+          UPDATE_RESPONSE=$(curl -s -w "%{http_code}" -X PUT "$PORTAINER_URL/api/stacks/$STACK_ID" \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{
               \"StackFileContent\": $DOCKER_COMPOSE_CONTENT,
               \"EndpointId\": ${{ secrets.PORTAINER_ENDPOINT_ID }}
-            }"
+            }")
+          
+          UPDATE_HTTP_STATUS="${UPDATE_RESPONSE: -3}"
+          UPDATE_RESPONSE_BODY="${UPDATE_RESPONSE%???}"
+          
+          echo "Status actualización: $UPDATE_HTTP_STATUS"
+          echo "Respuesta actualización: $UPDATE_RESPONSE_BODY"
+          
+          if [ "$UPDATE_HTTP_STATUS" != "200" ]; then
+            echo "Error actualizando stack (Status: $UPDATE_HTTP_STATUS)"
+            exit 1
+          fi
           
           echo "Stack actualizado exitosamente"
         fi
