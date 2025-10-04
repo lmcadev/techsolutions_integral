@@ -12,5 +12,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
   verbose: true,
   // Configuración para tests con base de datos
-  testTimeout: 15000
+  testTimeout: 15000,
+  // Ejecutar tests secuencialmente para evitar conflictos de DB
+  maxWorkers: 1
 };

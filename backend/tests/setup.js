@@ -2,39 +2,27 @@ const db = require('../db');
 
 let isDbInitialized = false;
 
-// Función para limpiar y reinicializar la base de datos
-async function resetDatabase() {
-  try {
-    // Limpiar tablas existentes
-    await db.query('DROP TABLE IF EXISTS usuarios CASCADE');
-    await db.query('DROP TABLE IF EXISTS servicios CASCADE');
-    
-    console.log('Tablas limpiadas');
-    
-    // Solo crear tablas (sin datos iniciales para tests)
-    await db.createTables();
-    console.log('Tablas creadas para tests');
-    
-  } catch (error) {
-    console.error('Error reinicializando base de datos:', error);
-    throw error;
-  }
-}
-
 // Setup global para los tests - una sola vez al inicio
 beforeAll(async () => {
   console.log('Configurando entorno de pruebas...');
   
   if (!isDbInitialized) {
-    await resetDatabase();
-    isDbInitialized = true;
+    try {
+      // Inicializar base de datos normal (crea tablas y datos iniciales)
+      await db.init();
+      console.log('Base de datos de pruebas inicializada');
+      isDbInitialized = true;
+    } catch (error) {
+      console.error('Error inicializando base de datos de pruebas:', error);
+      throw error;
+    }
   }
 });
 
-// Limpiar datos entre cada test file para evitar conflictos
+// Limpiar datos entre cada test para evitar conflictos
 beforeEach(async () => {
   try {
-    // Solo limpiar datos, no recrear tablas
+    // Solo limpiar datos, manteniendo la estructura
     await db.query('TRUNCATE TABLE usuarios RESTART IDENTITY CASCADE');
     await db.query('TRUNCATE TABLE servicios RESTART IDENTITY CASCADE');
     
@@ -54,6 +42,7 @@ beforeEach(async () => {
     
   } catch (error) {
     console.error('Error preparando datos para test:', error);
+    // No lanzar error aquí para que los tests puedan continuar
   }
 });
 
