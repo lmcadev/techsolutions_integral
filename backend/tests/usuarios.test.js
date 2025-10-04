@@ -40,7 +40,8 @@ describe('Usuarios Endpoints', () => {
       const nuevoUsuario = {
         nombre: 'Test Usuario',
         correo: 'test@example.com',
-        password: 'testpass123'
+        password: 'testpass123',
+        rol: 'user'
       };
 
       const res = await request(app)
@@ -104,7 +105,8 @@ describe('Usuarios Endpoints', () => {
       const nuevoUsuario = {
         nombre: 'Usuario Para Eliminar',
         correo: 'eliminar@test.com',
-        password: 'password123'
+        password: 'password123',
+        rol: 'user'
       };
 
       const createRes = await request(app)
