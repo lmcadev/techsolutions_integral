@@ -136,12 +136,6 @@ jobs:
               retries: 3
               start_period: 60s
             labels:
-              # Dashboard (opcional, solo para admin)
-              - "traefik.enable=true"
-              - "traefik.http.routers.traefik-dashboard.rule=Host(\`traefik.${{ env.DOMAIN }}\`)"
-              - "traefik.http.routers.traefik-dashboard.tls=true"
-              - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
-              - "traefik.http.routers.traefik-dashboard.service=api@internal"
               # Security headers middleware
               - "traefik.http.middlewares.security-headers.headers.frameDeny=true"
               - "traefik.http.middlewares.security-headers.headers.contentTypeNosniff=true"
