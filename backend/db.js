@@ -11,7 +11,7 @@ const pool = new Pool({
   database: process.env.PGDATABASE
 });
 
-async function init() {
+async function createTables() {
   // Create tables if they don't exist
   await pool.query(`
     CREATE TABLE IF NOT EXISTS usuarios (
@@ -36,6 +36,11 @@ async function init() {
       fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
+}
+
+async function init() {
+  // Create tables first
+  await createTables();
 
   // Seed admin user if no users exist
   const userRes = await pool.query('SELECT COUNT(*) AS count FROM usuarios');
@@ -45,7 +50,7 @@ async function init() {
       'INSERT INTO usuarios (nombre, correo, password, rol) VALUES ($1,$2,$3,$4)',
       ['Administrador', 'admin@techsolutions.com', passwordHash, 'admin']
     );
-    console.log('✅ Usuario administrador creado: admin@techsolutions.com (password: admin123)');
+    console.log('Usuario administrador creado: admin@techsolutions.com (password: admin123)');
   }
 
   // Seed services if no services exist
@@ -80,12 +85,13 @@ async function init() {
         [servicio.nombre, servicio.descripcion, servicio.precio, servicio.icono, true]
       );
     }
-    console.log('✅ Servicios iniciales creados en la base de datos');
+    console.log('Servicios iniciales creados en la base de datos');
   }
 }
 
 module.exports = {
   query: (text, params) => pool.query(text, params),
   pool,
-  init
+  init,
+  createTables
 };

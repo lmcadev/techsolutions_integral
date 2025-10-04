@@ -4,8 +4,8 @@ const app = require('../server');
 describe('Usuarios Endpoints', () => {
   let token;
 
-  beforeAll(async () => {
-    // Obtener token de autenticación
+  beforeEach(async () => {
+    // Obtener token de autenticación después de que se creen los datos de test
     const loginRes = await request(app)
       .post('/api/auth/login')
       .send({

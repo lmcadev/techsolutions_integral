@@ -45,7 +45,7 @@ describe('Auth Endpoints', () => {
   describe('GET /api/auth/verify', () => {
     let token;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
       const loginRes = await request(app)
         .post('/api/auth/login')
         .send({
