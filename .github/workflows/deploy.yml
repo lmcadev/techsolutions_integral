@@ -127,7 +127,8 @@ jobs:
               - /var/run/docker.sock:/var/run/docker.sock:ro
               - traefik_letsencrypt:/letsencrypt
             networks:
-              - techsolutions_network
+              techsolutions_network:
+                ipv4_address: 172.21.0.8
             restart: unless-stopped
             healthcheck:
               test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/ping"]
@@ -156,7 +157,7 @@ jobs:
               - PGPASSWORD=${{ secrets.DB_PASSWORD }}
               - PGDATABASE=${{ secrets.DB_NAME }}
               # DATABASE_URL con caracteres especiales problemáticos - usar variables individuales
-              # - DATABASE_URL=postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@db:5432/${{ secrets.DB_NAME }}
+              # - DATABASE_URL=postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@db:5432/${{ secrets.DB_Name }}
               - JWT_SECRET=${{ secrets.JWT_SECRET }}
               - JWT_EXPIRES_IN=7d
               - FRONTEND_URL=https://${{ env.DOMAIN }}
@@ -164,7 +165,8 @@ jobs:
               - RATE_LIMIT_MAX_REQUESTS=100
               - BCRYPT_SALT_ROUNDS=12
             networks:
-              - techsolutions_network
+              techsolutions_network:
+                ipv4_address: 172.21.0.6
             restart: unless-stopped
             healthcheck:
               test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/api/health"]
@@ -190,7 +192,8 @@ jobs:
             image: ghcr.io/${{ github.repository_owner }}/techsolutions-frontend:${{ github.sha }}
             container_name: techsolutions_frontend
             networks:
-              - techsolutions_network
+              techsolutions_network:
+                ipv4_address: 172.21.0.5
             restart: unless-stopped
             healthcheck:
               test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
@@ -221,7 +224,8 @@ jobs:
             volumes:
               - db_data:/var/lib/postgresql/data
             networks:
-              - techsolutions_network
+              techsolutions_network:
+                ipv4_address: 172.21.0.7
             restart: unless-stopped
             healthcheck:
               test: ["CMD-SHELL", "pg_isready -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }}"]
@@ -233,6 +237,9 @@ jobs:
         networks:
           techsolutions_network:
             driver: bridge
+            ipam:
+              config:
+                - subnet: 172.21.0.0/16
 
         volumes:
           db_data:
