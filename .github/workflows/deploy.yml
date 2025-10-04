@@ -204,13 +204,28 @@ jobs:
 
     - name: Deploy a Portainer
       run: |
+        # Configurar URL de Portainer
+        PORTAINER_URL="http://145.223.79.134:9000"
+        
         # Verificar conectividad a Portainer
         echo "Verificando conectividad a Portainer..."
-        echo "URL: ${{ secrets.PORTAINER_URL }}/api/auth"
+        echo "URL: $PORTAINER_URL/api/auth"
+        
+        # Verificar que Portainer esté accesible
+        echo "Probando conectividad básica..."
+        if ! curl -s --connect-timeout 10 "$PORTAINER_URL" > /dev/null; then
+          echo "Error: No se puede conectar a Portainer en $PORTAINER_URL"
+          echo "Verificar:"
+          echo "  - El servidor VPS está activo"
+          echo "  - Portainer está ejecutándose en el puerto 9000"
+          echo "  - No hay firewall bloqueando el puerto"
+          exit 1
+        fi
+        echo "Conectividad básica OK"
         
         # Obtener token de Portainer con manejo de errores
         echo "Intentando autenticación con Portainer..."
-        AUTH_RESPONSE=$(curl -s -w "%{http_code}" -X POST "${{ secrets.PORTAINER_URL }}/api/auth" \
+        AUTH_RESPONSE=$(curl -s -w "%{http_code}" -X POST "$PORTAINER_URL/api/auth" \
           -H "Content-Type: application/json" \
           -d '{"Username": "${{ secrets.PORTAINER_USERNAME }}", "Password": "${{ secrets.PORTAINER_PASSWORD }}"}')
         
@@ -223,8 +238,8 @@ jobs:
         if [ "$HTTP_STATUS" != "200" ]; then
           echo "Error: Falló la autenticación con Portainer (Status: $HTTP_STATUS)"
           echo "Verificar:"
-          echo "  - URL de Portainer: ${{ secrets.PORTAINER_URL }}"
-          echo "  - Credenciales de Portainer"
+          echo "  - URL de Portainer: $PORTAINER_URL"
+          echo "  - Credenciales de Portainer (Username: ${{ secrets.PORTAINER_USERNAME }})"
           echo "  - Conectividad de red"
           exit 1
         fi
@@ -240,7 +255,7 @@ jobs:
         echo "Token de Portainer obtenido exitosamente"
         
         # Verificar si el stack existe
-        STACK_ID=$(curl -X GET "${{ secrets.PORTAINER_URL }}/api/stacks" \
+        STACK_ID=$(curl -s -X GET "$PORTAINER_URL/api/stacks" \
           -H "Authorization: Bearer $ACCESS_TOKEN" \
           | jq -r '.[] | select(.Name == "${{ env.PORTAINER_STACK_NAME }}") | .Id')
         
@@ -251,7 +266,7 @@ jobs:
           echo "Creando nuevo stack en Portainer..."
           
           # Crear nuevo stack
-          RESPONSE=$(curl -X POST "${{ secrets.PORTAINER_URL }}/api/stacks" \
+          RESPONSE=$(curl -s -X POST "$PORTAINER_URL/api/stacks" \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{
@@ -267,7 +282,7 @@ jobs:
           echo "Actualizando stack existente (ID: $STACK_ID)..."
           
           # Actualizar stack existente
-          curl -X PUT "${{ secrets.PORTAINER_URL }}/api/stacks/$STACK_ID" \
+          curl -s -X PUT "$PORTAINER_URL/api/stacks/$STACK_ID" \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{
@@ -283,9 +298,12 @@ jobs:
         # Esperar a que los contenedores se levanten
         sleep 60
         
+        # Configurar URL de Portainer
+        PORTAINER_URL="http://145.223.79.134:9000"
+        
         # Obtener token de Portainer para verificación
         echo "Obteniendo token para verificación..."
-        AUTH_RESPONSE=$(curl -s -w "%{http_code}" -X POST "${{ secrets.PORTAINER_URL }}/api/auth" \
+        AUTH_RESPONSE=$(curl -s -w "%{http_code}" -X POST "$PORTAINER_URL/api/auth" \
           -H "Content-Type: application/json" \
           -d '{"Username": "${{ secrets.PORTAINER_USERNAME }}", "Password": "${{ secrets.PORTAINER_PASSWORD }}"}')
         
@@ -301,7 +319,7 @@ jobs:
         
         # Verificar estado del stack solo si tenemos token válido
         if [ "$ACCESS_TOKEN" != "null" ] && [ ! -z "$ACCESS_TOKEN" ]; then
-          STACK_STATUS=$(curl -s -X GET "${{ secrets.PORTAINER_URL }}/api/stacks" \
+          STACK_STATUS=$(curl -s -X GET "$PORTAINER_URL/api/stacks" \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             | jq -r '.[] | select(.Name == "${{ env.PORTAINER_STACK_NAME }}") | .Status' 2>/dev/null)
           
@@ -365,9 +383,12 @@ jobs:
         echo "Rama: ${{ env.BRANCH }}"
         echo "Stack: ${{ env.PORTAINER_STACK_NAME }}"
         
+        # Configurar URL de Portainer
+        PORTAINER_URL="http://145.223.79.134:9000"
+        
         # Obtener token de Portainer para rollback
         echo "Obteniendo token para rollback..."
-        AUTH_RESPONSE=$(curl -s -w "%{http_code}" -X POST "${{ secrets.PORTAINER_URL }}/api/auth" \
+        AUTH_RESPONSE=$(curl -s -w "%{http_code}" -X POST "$PORTAINER_URL/api/auth" \
           -H "Content-Type: application/json" \
           -d '{"Username": "${{ secrets.PORTAINER_USERNAME }}", "Password": "${{ secrets.PORTAINER_PASSWORD }}"}')
         
@@ -383,18 +404,18 @@ jobs:
         ACCESS_TOKEN=$(echo "$RESPONSE_BODY" | jq -r .jwt 2>/dev/null)
         
         # Obtener ID del stack
-        STACK_ID=$(curl -X GET "${{ secrets.PORTAINER_URL }}/api/stacks" \
+        STACK_ID=$(curl -s -X GET "$PORTAINER_URL/api/stacks" \
           -H "Authorization: Bearer $ACCESS_TOKEN" \
           | jq -r '.[] | select(.Name == "${{ env.PORTAINER_STACK_NAME }}") | .Id')
         
         if [ "$STACK_ID" != "" ]; then
           # Detener stack fallido
           echo "Deteniendo stack BETA fallido (ID: $STACK_ID)..."
-          curl -X POST "${{ secrets.PORTAINER_URL }}/api/stacks/$STACK_ID/stop" \
+          curl -s -X POST "$PORTAINER_URL/api/stacks/$STACK_ID/stop" \
             -H "Authorization: Bearer $ACCESS_TOKEN"
           
           echo "Rollback BETA completado. Stack detenido."
-          echo "Revisa la configuración en Portainer: ${{ secrets.PORTAINER_URL }}"
+          echo "Revisa la configuración en Portainer: $PORTAINER_URL"
         else
           echo "No se encontró el stack BETA para rollback"
         fi
