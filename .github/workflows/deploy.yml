@@ -254,6 +254,20 @@ jobs:
         
         echo "Token de Portainer obtenido exitosamente"
         
+        # Obtener información del environment 'local'
+        echo "Obteniendo información de environments..."
+        ENVIRONMENTS=$(curl -s -X GET "$PORTAINER_URL/api/endpoints" \
+          -H "Authorization: Bearer $ACCESS_TOKEN")
+        echo "Environments encontrados: $ENVIRONMENTS"
+        
+        LOCAL_ENV_ID=$(echo "$ENVIRONMENTS" | jq -r '.[] | select(.Name == "local") | .Id')
+        echo "Local Environment ID: $LOCAL_ENV_ID"
+        
+        if [ "$LOCAL_ENV_ID" = "" ] || [ "$LOCAL_ENV_ID" = "null" ]; then
+          echo "Error: No se encontró el environment 'local'"
+          exit 1
+        fi
+        
         # Verificar si el stack existe
         echo "Listando stacks existentes..."
         STACKS_LIST=$(curl -s -X GET "$PORTAINER_URL/api/stacks" \
@@ -270,16 +284,16 @@ jobs:
         if [ "$STACK_ID" = "" ]; then
           echo "Creando nuevo stack en Portainer..."
           echo "Nombre del stack: ${{ env.PORTAINER_STACK_NAME }}"
-          echo "Endpoint ID: ${{ secrets.PORTAINER_ENDPOINT_ID }}"
+          echo "Local Environment ID: $LOCAL_ENV_ID"
           
-          # Crear nuevo stack
-          RESPONSE=$(curl -s -w "%{http_code}" -X POST "$PORTAINER_URL/api/stacks" \
+          # Crear nuevo stack usando compose/docker-compose
+          RESPONSE=$(curl -s -w "%{http_code}" -X POST "$PORTAINER_URL/api/stacks/create/standalone/string" \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{
-              \"Name\": \"${{ env.PORTAINER_STACK_NAME }}\",
-              \"StackFileContent\": $DOCKER_COMPOSE_CONTENT,
-              \"EndpointId\": ${{ secrets.PORTAINER_ENDPOINT_ID }}
+              \"name\": \"${{ env.PORTAINER_STACK_NAME }}\",
+              \"stackFileContent\": $DOCKER_COMPOSE_CONTENT,
+              \"endpointId\": $LOCAL_ENV_ID
             }")
           
           HTTP_STATUS="${RESPONSE: -3}"
@@ -305,8 +319,8 @@ jobs:
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{
-              \"StackFileContent\": $DOCKER_COMPOSE_CONTENT,
-              \"EndpointId\": ${{ secrets.PORTAINER_ENDPOINT_ID }}
+              \"stackFileContent\": $DOCKER_COMPOSE_CONTENT,
+              \"endpointId\": $LOCAL_ENV_ID
             }")
           
           UPDATE_HTTP_STATUS="${UPDATE_RESPONSE: -3}"
@@ -317,6 +331,7 @@ jobs:
           
           if [ "$UPDATE_HTTP_STATUS" != "200" ]; then
             echo "Error actualizando stack (Status: $UPDATE_HTTP_STATUS)"
+            echo "Respuesta completa: $UPDATE_RESPONSE_BODY"
             exit 1
           fi
           
