@@ -100,7 +100,7 @@ jobs:
               # API and Dashboard
               - --api.dashboard=true
               - --api.insecure=false
-              # EntryPoints (puertos verificados libres: 7080, 8090)
+              # EntryPoints (puertos confirmados libres - no conflictan con Portainer)
               - --entrypoints.web.address=:7080
               - --entrypoints.websecure.address=:8090
               # Docker provider
