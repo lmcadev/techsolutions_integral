@@ -99,7 +99,8 @@ jobs:
             command:
               # API and Dashboard
               - --api.dashboard=true
-              - --api.insecure=false
+              - --api.insecure=true
+              - --ping=true
               # EntryPoints (puertos confirmados libres - no conflictan con Portainer)
               - --entrypoints.web.address=:7080
               - --entrypoints.websecure.address=:8090
@@ -129,7 +130,7 @@ jobs:
               - techsolutions_network
             restart: unless-stopped
             healthcheck:
-              test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:7080/ping"]
+              test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/ping"]
               interval: 30s
               timeout: 10s
               retries: 3
