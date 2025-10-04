@@ -74,8 +74,8 @@ app.use((err, req, res, next) => {
 
 const db = require('./db');
 
-// Iniciar servidor después de inicializar DB
-(async () => {
+// Función para inicializar el servidor
+async function initializeServer() {
   try {
     await db.init();
     console.log('📦 Base de datos inicializada');
@@ -88,6 +88,11 @@ const db = require('./db');
     console.error('Fallo inicializando la base de datos:', err);
     process.exit(1);
   }
-})();
+}
+
+// Solo inicializar automáticamente si NO estamos en modo test
+if (process.env.NODE_ENV !== 'test') {
+  initializeServer();
+}
 
 module.exports = app;

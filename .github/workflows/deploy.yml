@@ -22,6 +22,23 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     
+    # Servicio PostgreSQL para tests
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -44,6 +61,16 @@ jobs:
         npm run test
       env:
         NODE_ENV: test
+        # Variables de base de datos para tests
+        PGHOST: localhost
+        PGPORT: 5432
+        PGUSER: test_user
+        PGPASSWORD: test_password
+        PGDATABASE: test_db
+        DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db
+        # Variables de auth para tests
+        JWT_SECRET: test_jwt_secret_for_testing
+        JWT_EXPIRES_IN: 1h
 
   # despliegue via Portainer
   deploy:
