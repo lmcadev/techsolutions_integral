@@ -1,0 +1,323 @@
+name: Deploy a VPS via Portainer (Beta)
+
+on:
+  push:
+    branches: [ beta ]
+  pull_request:
+    branches: [ beta ]
+    types: [ closed ]
+
+  # Permitir ejecución manual
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  PORTAINER_STACK_NAME: 'techsolutions-integral-beta'
+  DOMAIN: 'techsolutions.lmcadev.com'
+  BRANCH: 'beta'
+
+jobs:
+  # tests antes del despliegue
+  test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+
+    - name: Instalar dependencias del backend
+      run: |
+        cd backend
+        npm ci
+
+    - name: Realizar pruebas del backend
+      run: |
+        cd backend
+        npm run test
+      env:
+        NODE_ENV: test
+
+  # despliegue via Portainer
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+
+    steps:
+    - name: Verificar codigo
+      uses: actions/checkout@v4
+
+    - name: Preparar Docker Compose Stack
+      run: |
+        # Crear docker-compose.portainer.yml con variables de entorno
+        cat << EOF > docker-compose.portainer.yml
+        version: '3.8'
+
+        services:
+          # Backend API
+          backend:
+            image: ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+            container_name: techsolutions_backend
+            environment:
+              - NODE_ENV=production
+              - PORT=3000
+              - PGHOST=db
+              - PGPORT=5432
+              - PGUSER=${{ secrets.DB_USER }}
+              - PGPASSWORD=${{ secrets.DB_PASSWORD }}
+              - PGDATABASE=${{ secrets.DB_NAME }}
+              - DATABASE_URL=postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@db:5432/${{ secrets.DB_NAME }}
+              - JWT_SECRET=${{ secrets.JWT_SECRET }}
+              - JWT_EXPIRES_IN=7d
+              - FRONTEND_URL=https://${{ env.DOMAIN }}
+              - RATE_LIMIT_WINDOW_MS=900000
+              - RATE_LIMIT_MAX_REQUESTS=100
+              - BCRYPT_SALT_ROUNDS=12
+            networks:
+              - techsolutions_network
+            restart: unless-stopped
+            healthcheck:
+              test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+              interval: 30s
+              timeout: 10s
+              retries: 3
+              start_period: 60s
+            labels:
+              - "traefik.enable=true"
+              - "traefik.http.routers.techsolutions-api.rule=Host(\`${{ env.DOMAIN }}\`) && PathPrefix(\`/api\`)"
+              - "traefik.http.routers.techsolutions-api.tls=true"
+              - "traefik.http.routers.techsolutions-api.tls.certresolver=letsencrypt"
+              - "traefik.http.services.techsolutions-api.loadbalancer.server.port=3000"
+
+          # Frontend Angular
+          frontend:
+            image: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
+            container_name: techsolutions_frontend
+            networks:
+              - techsolutions_network
+            restart: unless-stopped
+            healthcheck:
+              test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+              interval: 30s
+              timeout: 10s
+              retries: 3
+              start_period: 30s
+            labels:
+              - "traefik.enable=true"
+              - "traefik.http.routers.techsolutions-frontend.rule=Host(\`${{ env.DOMAIN }}\`)"
+              - "traefik.http.routers.techsolutions-frontend.tls=true"
+              - "traefik.http.routers.techsolutions-frontend.tls.certresolver=letsencrypt"
+              - "traefik.http.services.techsolutions-frontend.loadbalancer.server.port=80"
+
+          # PostgreSQL DB
+          db:
+            image: postgres:15-alpine
+            container_name: techsolutions_db
+            environment:
+              - POSTGRES_USER=${{ secrets.DB_USER }}
+              - POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}
+              - POSTGRES_DB=${{ secrets.DB_NAME }}
+              - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+            volumes:
+              - db_data:/var/lib/postgresql/data
+            networks:
+              - techsolutions_network
+            restart: unless-stopped
+            healthcheck:
+              test: ["CMD-SHELL", "pg_isready -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }}"]
+              interval: 30s
+              timeout: 10s
+              retries: 5
+              start_period: 60s
+
+        networks:
+          techsolutions_network:
+            driver: bridge
+
+        volumes:
+          db_data:
+            driver: local
+        EOF
+
+    - name: Construir y subir imágenes Docker
+      run: |
+        # Login a github container registry
+        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        
+        # Construir imagen backend
+        docker build -t ghcr.io/${{ github.repository }}/backend:${{ github.sha }} ./backend
+        docker push ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+        
+        # Construir imagen frontend
+        docker build -t ghcr.io/${{ github.repository }}/frontend:${{ github.sha }} ./techsolutions_integral
+        docker push ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
+        
+        # Tags para beta
+        docker tag ghcr.io/${{ github.repository }}/backend:${{ github.sha }} ghcr.io/${{ github.repository }}/backend:beta
+        docker tag ghcr.io/${{ github.repository }}/frontend:${{ github.sha }} ghcr.io/${{ github.repository }}/frontend:beta
+        docker push ghcr.io/${{ github.repository }}/backend:beta
+        docker push ghcr.io/${{ github.repository }}/frontend:beta
+        
+        # Mantener también latest para compatibilidad
+        docker tag ghcr.io/${{ github.repository }}/backend:${{ github.sha }} ghcr.io/${{ github.repository }}/backend:latest
+        docker tag ghcr.io/${{ github.repository }}/frontend:${{ github.sha }} ghcr.io/${{ github.repository }}/frontend:latest
+        docker push ghcr.io/${{ github.repository }}/backend:latest
+        docker push ghcr.io/${{ github.repository }}/frontend:latest
+
+    - name: Deploy a Portainer
+      run: |
+        # Obtener token de Portainer
+        ACCESS_TOKEN=$(curl -X POST "${{ secrets.PORTAINER_URL }}/api/auth" \
+          -H "Content-Type: application/json" \
+          -d '{"Username": "${{ secrets.PORTAINER_USERNAME }}", "Password": "${{ secrets.PORTAINER_PASSWORD }}"}' \
+          | jq -r .jwt)
+        
+        if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
+          echo "Error: No se pudo obtener token de Portainer"
+          exit 1
+        fi
+        
+        echo "Token de Portainer obtenido exitosamente"
+        
+        # Verificar si el stack existe
+        STACK_ID=$(curl -X GET "${{ secrets.PORTAINER_URL }}/api/stacks" \
+          -H "Authorization: Bearer $ACCESS_TOKEN" \
+          | jq -r '.[] | select(.Name == "${{ env.PORTAINER_STACK_NAME }}") | .Id')
+        
+        # Preparar el archivo docker-compose como string JSON
+        DOCKER_COMPOSE_CONTENT=$(cat docker-compose.portainer.yml | jq -Rs .)
+        
+        if [ "$STACK_ID" = "" ]; then
+          echo "Creando nuevo stack en Portainer..."
+          
+          # Crear nuevo stack
+          RESPONSE=$(curl -X POST "${{ secrets.PORTAINER_URL }}/api/stacks" \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"Name\": \"${{ env.PORTAINER_STACK_NAME }}\",
+              \"StackFileContent\": $DOCKER_COMPOSE_CONTENT,
+              \"EndpointId\": ${{ secrets.PORTAINER_ENDPOINT_ID }}
+            }")
+          
+          NEW_STACK_ID=$(echo $RESPONSE | jq -r .Id)
+          echo "Stack creado con ID: $NEW_STACK_ID"
+          
+        else
+          echo "Actualizando stack existente (ID: $STACK_ID)..."
+          
+          # Actualizar stack existente
+          curl -X PUT "${{ secrets.PORTAINER_URL }}/api/stacks/$STACK_ID" \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"StackFileContent\": $DOCKER_COMPOSE_CONTENT,
+              \"EndpointId\": ${{ secrets.PORTAINER_ENDPOINT_ID }}
+            }"
+          
+          echo "Stack actualizado exitosamente"
+        fi
+
+    - name: Verificar el despliegue
+      run: |
+        # Esperar a que los contenedores se levanten
+        sleep 60
+        
+        # Obtener token de Portainer para verificación
+        ACCESS_TOKEN=$(curl -X POST "${{ secrets.PORTAINER_URL }}/api/auth" \
+          -H "Content-Type: application/json" \
+          -d '{"Username": "${{ secrets.PORTAINER_USERNAME }}", "Password": "${{ secrets.PORTAINER_PASSWORD }}"}' \
+          | jq -r .jwt)
+        
+        # Verificar estado del stack
+        STACK_STATUS=$(curl -X GET "${{ secrets.PORTAINER_URL }}/api/stacks" \
+          -H "Authorization: Bearer $ACCESS_TOKEN" \
+          | jq -r '.[] | select(.Name == "${{ env.PORTAINER_STACK_NAME }}") | .Status')
+        
+        echo "Estado del stack: $STACK_STATUS"
+        
+        # Verificar que la aplicación responda
+        echo "Verificando health de la aplicación..."
+        
+        # Intentar conectar a la API a través del dominio
+        for i in {1..10}; do
+          if curl -f "https://${{ env.DOMAIN }}/api/health" > /dev/null 2>&1; then
+            echo "API está funcionando correctamente en https://${{ env.DOMAIN }}/api/health"
+            break
+          fi
+          echo "Intento $i/10: API no responde, esperando..."
+          sleep 15
+        done
+        
+        # Verificar frontend
+        if curl -f "https://${{ env.DOMAIN }}" > /dev/null 2>&1; then
+          echo "Frontend está funcionando correctamente en https://${{ env.DOMAIN }}"
+        else
+          echo "Frontend podría no estar respondiendo correctamente"
+        fi
+
+    - name: Notification on Success
+      if: success()
+      run: |
+        echo "Despliegue BETA exitoso en Hostinger VPS via Portainer!"
+        echo "Aplicación BETA disponible en: https://${{ env.DOMAIN }}"
+        echo "Backend API BETA: https://${{ env.DOMAIN }}/api/health"
+        echo "Rama desplegada: ${{ env.BRANCH }}"
+        echo "Stack: ${{ env.PORTAINER_STACK_NAME }}"
+        echo "CloudPanel: Configurado con dominio ${{ env.DOMAIN }}"
+
+    - name: Notification on Failure
+      if: failure()
+      run: |
+        echo "Error en el despliegue BETA via Portainer. Revisa los logs para más detalles."
+        echo "Rama afectada: ${{ env.BRANCH }}"
+        echo "Stack: ${{ env.PORTAINER_STACK_NAME }}"
+        echo "Verifica:"
+        echo "  - Credenciales de Portainer"
+        echo "  - Configuración de CloudPanel"
+        echo "  - Estado de los contenedores en Portainer"
+        echo "  - Logs del workflow en GitHub Actions"
+
+  # Job para rollback en caso de fallo via Portainer
+  rollback:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: failure()
+    
+    steps:
+    - name: Rollback Portainer Beta
+      run: |
+        echo "Iniciando rollback BETA en Portainer..."
+        echo "Rama: ${{ env.BRANCH }}"
+        echo "Stack: ${{ env.PORTAINER_STACK_NAME }}"
+        
+        # Obtener token de Portainer
+        ACCESS_TOKEN=$(curl -X POST "${{ secrets.PORTAINER_URL }}/api/auth" \
+          -H "Content-Type: application/json" \
+          -d '{"Username": "${{ secrets.PORTAINER_USERNAME }}", "Password": "${{ secrets.PORTAINER_PASSWORD }}"}' \
+          | jq -r .jwt)
+        
+        # Obtener ID del stack
+        STACK_ID=$(curl -X GET "${{ secrets.PORTAINER_URL }}/api/stacks" \
+          -H "Authorization: Bearer $ACCESS_TOKEN" \
+          | jq -r '.[] | select(.Name == "${{ env.PORTAINER_STACK_NAME }}") | .Id')
+        
+        if [ "$STACK_ID" != "" ]; then
+          # Detener stack fallido
+          echo "Deteniendo stack BETA fallido (ID: $STACK_ID)..."
+          curl -X POST "${{ secrets.PORTAINER_URL }}/api/stacks/$STACK_ID/stop" \
+            -H "Authorization: Bearer $ACCESS_TOKEN"
+          
+          echo "Rollback BETA completado. Stack detenido."
+          echo "Revisa la configuración en Portainer: ${{ secrets.PORTAINER_URL }}"
+        else
+          echo "No se encontró el stack BETA para rollback"
+        fi

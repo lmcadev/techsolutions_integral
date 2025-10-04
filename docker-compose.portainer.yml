@@ -1,0 +1,199 @@
+version: '3.8'
+
+# Docker Compose para Portainer Stack - TechSolutions Integral
+# Configurado para Hostinger VPS al dominio techsolutions.lmcadev.com
+
+services:
+  # Backend API - Node.js Express
+  backend:
+    image: ghcr.io/${GITHUB_REPOSITORY}/backend:latest
+    container_name: techsolutions_backend
+    ports:
+      - "3010:3000"  # Exponer puerto 3010 externamente
+    environment:
+      # Configuración del entorno
+      - NODE_ENV=production
+      - PORT=3000
+      
+      # Base de datos PostgreSQL
+      - PGHOST=db
+      - PGPORT=5432
+      - PGUSER=${DB_USER}
+      - PGPASSWORD=${DB_PASSWORD}
+      - PGDATABASE=${DB_NAME}
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      
+      # JWT y Seguridad
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=7d
+      - BCRYPT_SALT_ROUNDS=12
+      
+      # CORS - Configurado para el dominio de CloudPanel
+      - FRONTEND_URL=https://techsolutions.lmcadev.com
+      
+      # Rate Limiting
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
+      
+      # Logging
+      - LOG_LEVEL=info
+      
+    networks:
+      - techsolutions_network
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    
+    # Health check para verificar que la API esté funcionando
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health", "--timeout=5"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Labels para Traefik (si CloudPanel usa Traefik)
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.techsolutions-api.rule=Host(`techsolutions.lmcadev.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.techsolutions-api.tls=true"
+      - "traefik.http.routers.techsolutions-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.techsolutions-api.loadbalancer.server.port=3000"
+      - "traefik.http.middlewares.techsolutions-api-headers.headers.accesscontrolalloworigin=https://techsolutions.lmcadev.com"
+    
+    # Límites de recursos
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    
+    # Logging configurado
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Frontend Angular con Nginx
+  frontend:
+    image: ghcr.io/${GITHUB_REPOSITORY}/frontend:latest
+    container_name: techsolutions_frontend
+    
+    networks:
+      - techsolutions_network
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    
+    # Health check para nginx
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80", "--timeout=5"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Labels para Traefik - Frontend principal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.techsolutions-frontend.rule=Host(`techsolutions.lmcadev.com`)"
+      - "traefik.http.routers.techsolutions-frontend.tls=true"
+      - "traefik.http.routers.techsolutions-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.techsolutions-frontend.loadbalancer.server.port=80"
+      - "traefik.http.routers.techsolutions-frontend.priority=1"
+    
+    # Límites de recursos
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    
+    # Logging configurado
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Base de datos PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: techsolutions_db
+    environment:
+      # Configuración de PostgreSQL
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --locale=C
+      
+      # Configuraciones de rendimiento
+      - POSTGRES_SHARED_PRELOAD_LIBRARIES=pg_stat_statements
+      - POSTGRES_MAX_CONNECTIONS=100
+      - POSTGRES_SHARED_BUFFERS=256MB
+      - POSTGRES_EFFECTIVE_CACHE_SIZE=1GB
+      - POSTGRES_WORK_MEM=4MB
+      
+    volumes:
+      # Datos persistentes de la base de datos
+      - db_data:/var/lib/postgresql/data
+      
+      # Scripts de inicialización
+      - ./postgres-init:/docker-entrypoint-initdb.d
+      
+    networks:
+      - techsolutions_network
+    restart: unless-stopped
+    
+    # Health check para PostgreSQL
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    
+    # Límites de recursos para la base de datos
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    
+    # Configuración de logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Labels para identificación
+    labels:
+      - "traefik.enable=false"  # DB no expuesta públicamente
+
+# Redes
+networks:
+  techsolutions_network:
+    driver: bridge
+    labels:
+      - "com.docker.compose.project=techsolutions"
+
+# Volúmenes
+volumes:
+  db_data:
+    driver: local
+    labels:
+      - "com.docker.compose.project=techsolutions"
+      - "com.docker.compose.volume=database"
