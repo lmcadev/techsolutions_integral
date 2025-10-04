@@ -77,6 +77,9 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    permissions:
+      contents: read
+      packages: write
 
     steps:
     - name: Verificar codigo
@@ -91,7 +94,7 @@ jobs:
         services:
           # Backend API
           backend:
-            image: ghcr.io/lmcadev/techsolutions-backend:${{ github.sha }}
+            image: ghcr.io/${{ github.repository_owner }}/techsolutions-backend:${{ github.sha }}
             container_name: techsolutions_backend
             environment:
               - NODE_ENV=production
@@ -126,7 +129,7 @@ jobs:
 
           # Frontend Angular
           frontend:
-            image: ghcr.io/lmcadev/techsolutions-frontend:${{ github.sha }}
+            image: ghcr.io/${{ github.repository_owner }}/techsolutions-frontend:${{ github.sha }}
             container_name: techsolutions_frontend
             networks:
               - techsolutions_network
@@ -177,27 +180,27 @@ jobs:
     - name: Construir y subir imágenes Docker
       run: |
         # Login a github container registry
-        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
         
         # Construir imagen backend
-        docker build -t ghcr.io/lmcadev/techsolutions-backend:${{ github.sha }} ./backend
-        docker push ghcr.io/lmcadev/techsolutions-backend:${{ github.sha }}
+        docker build -t ghcr.io/${{ github.repository_owner }}/techsolutions-backend:${{ github.sha }} ./backend
+        docker push ghcr.io/${{ github.repository_owner }}/techsolutions-backend:${{ github.sha }}
         
         # Construir imagen frontend
-        docker build -t ghcr.io/lmcadev/techsolutions-frontend:${{ github.sha }} ./techsolutions_integral
-        docker push ghcr.io/lmcadev/techsolutions-frontend:${{ github.sha }}
+        docker build -t ghcr.io/${{ github.repository_owner }}/techsolutions-frontend:${{ github.sha }} ./techsolutions_integral
+        docker push ghcr.io/${{ github.repository_owner }}/techsolutions-frontend:${{ github.sha }}
         
         # Tags para beta
-        docker tag ghcr.io/lmcadev/techsolutions-backend:${{ github.sha }} ghcr.io/lmcadev/techsolutions-backend:beta
-        docker tag ghcr.io/lmcadev/techsolutions-frontend:${{ github.sha }} ghcr.io/lmcadev/techsolutions-frontend:beta
-        docker push ghcr.io/lmcadev/techsolutions-backend:beta
-        docker push ghcr.io/lmcadev/techsolutions-frontend:beta
+        docker tag ghcr.io/${{ github.repository_owner }}/techsolutions-backend:${{ github.sha }} ghcr.io/${{ github.repository_owner }}/techsolutions-backend:beta
+        docker tag ghcr.io/${{ github.repository_owner }}/techsolutions-frontend:${{ github.sha }} ghcr.io/${{ github.repository_owner }}/techsolutions-frontend:beta
+        docker push ghcr.io/${{ github.repository_owner }}/techsolutions-backend:beta
+        docker push ghcr.io/${{ github.repository_owner }}/techsolutions-frontend:beta
         
         # Mantener también latest para compatibilidad
-        docker tag ghcr.io/lmcadev/techsolutions-backend:${{ github.sha }} ghcr.io/lmcadev/techsolutions-backend:latest
-        docker tag ghcr.io/lmcadev/techsolutions-frontend:${{ github.sha }} ghcr.io/lmcadev/techsolutions-frontend:latest
-        docker push ghcr.io/lmcadev/techsolutions-backend:latest
-        docker push ghcr.io/lmcadev/techsolutions-frontend:latest
+        docker tag ghcr.io/${{ github.repository_owner }}/techsolutions-backend:${{ github.sha }} ghcr.io/${{ github.repository_owner }}/techsolutions-backend:latest
+        docker tag ghcr.io/${{ github.repository_owner }}/techsolutions-frontend:${{ github.sha }} ghcr.io/${{ github.repository_owner }}/techsolutions-frontend:latest
+        docker push ghcr.io/${{ github.repository_owner }}/techsolutions-backend:latest
+        docker push ghcr.io/${{ github.repository_owner }}/techsolutions-frontend:latest
 
     - name: Deploy a Portainer
       run: |
