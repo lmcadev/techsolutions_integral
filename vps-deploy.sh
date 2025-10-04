@@ -45,13 +45,13 @@ backup_database() {
     
     # Crear backup de PostgreSQL
     if docker exec techsolutions_db pg_dump -U techsolutions techsolutions_db > "$BACKUP_FILE" 2>/dev/null; then
-        log_info "✅ Backup creado: $BACKUP_FILE"
+        log_info "Backup creado: $BACKUP_FILE"
         
         # Mantener solo los últimos 5 backups
         ls -t "$BACKUP_DIR"/*.sql 2>/dev/null | tail -n +6 | xargs -r rm
         log_debug "Backups antiguos limpiados (manteniendo últimos 5)"
     else
-        log_warn "⚠️ No se pudo crear backup de la base de datos (contenedor no está corriendo)"
+        log_warn "No se pudo crear backup de la base de datos (contenedor no está corriendo)"
     fi
 }
 
@@ -83,12 +83,12 @@ check_requirements() {
         exit 1
     fi
     
-    log_info "✅ Todos los prerrequisitos están satisfechos"
+    log_info "Todos los prerrequisitos están satisfechos"
 }
 
 # Función principal de despliegue
 deploy() {
-    log_info "🚀 Iniciando despliegue de TechSolutions Integral..."
+    log_info "Iniciando despliegue de TechSolutions Integral..."
     
     cd "$PROJECT_DIR"
     
@@ -117,16 +117,16 @@ deploy() {
 
 # Función para verificar el despliegue
 verify_deployment() {
-    log_info "🔍 Verificando estado del despliegue..."
+    log_info "Verificando estado del despliegue..."
     
     cd "$PROJECT_DIR"
     
     # Verificar contenedores
     if docker-compose -f "$COMPOSE_FILE" ps | grep -q "Up"; then
-        log_info "✅ Contenedores están corriendo"
+        log_info "Contenedores están corriendo"
         docker-compose -f "$COMPOSE_FILE" ps
     else
-        log_error "❌ Algunos contenedores no están corriendo"
+        log_error "Algunos contenedores no están corriendo"
         docker-compose -f "$COMPOSE_FILE" ps
         return 1
     fi
@@ -138,7 +138,7 @@ verify_deployment() {
     
     while [ $attempt -le $max_attempts ]; do
         if curl -f http://localhost:3010/api/health > /dev/null 2>&1; then
-            log_info "✅ Backend está funcionando correctamente"
+            log_info "Backend está funcionando correctamente"
             break
         fi
         
@@ -148,32 +148,32 @@ verify_deployment() {
     done
     
     if [ $attempt -gt $max_attempts ]; then
-        log_error "❌ Backend no responde después de $max_attempts intentos"
+        log_error "Backend no responde después de $max_attempts intentos"
         return 1
     fi
     
     # Verificar frontend
     log_info "Verificando frontend..."
     if curl -f http://localhost:8080 > /dev/null 2>&1; then
-        log_info "✅ Frontend está funcionando correctamente"
+        log_info "Frontend está funcionando correctamente"
     else
-        log_warn "⚠️ Frontend podría no estar respondiendo correctamente"
+        log_warn "Frontend podría no estar respondiendo correctamente"
     fi
     
-    log_info "🎉 Despliegue verificado exitosamente!"
+    log_info "Despliegue verificado exitosamente!"
 }
 
 # Función para mostrar logs
 show_logs() {
     cd "$PROJECT_DIR"
-    log_info "📋 Mostrando logs de la aplicación..."
+    log_info "Mostrando logs de la aplicación..."
     docker-compose -f "$COMPOSE_FILE" logs -f
 }
 
 # Función para mostrar estado
 show_status() {
     cd "$PROJECT_DIR"
-    log_info "📊 Estado actual de la aplicación:"
+    log_info "Estado actual de la aplicación:"
     
     echo -e "\n${BLUE}=== Contenedores ===${NC}"
     docker-compose -f "$COMPOSE_FILE" ps
@@ -183,21 +183,21 @@ show_status() {
     
     echo -e "\n${BLUE}=== Salud de servicios ===${NC}"
     if curl -f http://localhost:3010/api/health 2>/dev/null; then
-        echo "Backend API: ✅ Funcionando"
+        echo "Backend API:  Funcionando"
     else
-        echo "Backend API: ❌ No responde"
+        echo "Backend API:  No responde"
     fi
     
     if curl -f http://localhost:8080 2>/dev/null; then
-        echo "Frontend: ✅ Funcionando"
+        echo "Frontend: Funcionando"
     else
-        echo "Frontend: ❌ No responde"
+        echo "Frontend:  No responde"
     fi
 }
 
 # Función para rollback
 rollback() {
-    log_warn "🔄 Iniciando rollback..."
+    log_warn "Iniciando rollback..."
     
     cd "$PROJECT_DIR"
     
@@ -212,12 +212,12 @@ rollback() {
         # docker exec -i techsolutions_db psql -U techsolutions techsolutions_db < "$latest_backup"
     fi
     
-    log_info "⚠️ Rollback completado. Verifica la configuración manual."
+    log_info "Rollback completado. Verifica la configuración manual."
 }
 
 # Función para limpiar recursos
 cleanup() {
-    log_info "🧹 Limpiando recursos..."
+    log_info "Limpiando recursos..."
     
     cd "$PROJECT_DIR"
     
@@ -230,7 +230,7 @@ cleanup() {
     # Limpiar volúmenes no utilizados
     docker volume prune -f
     
-    log_info "✅ Limpieza completada"
+    log_info "Limpieza completada"
 }
 
 # Función de ayuda

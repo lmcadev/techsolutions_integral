@@ -3,7 +3,7 @@
 # Script de despliegue para VPS - TechSolutions Integral
 # Ejecutar con: bash deploy-vps.sh
 
-echo "🚀 Iniciando despliegue en VPS..."
+echo "Iniciando despliegue en VPS..."
 
 # Colores para output
 RED='\033[0;31m'
@@ -57,12 +57,12 @@ log_info "Verificando estado de los contenedores..."
 sleep 10
 
 if docker-compose -f docker-compose.prod.yml ps | grep -q "Up"; then
-    log_info "✅ Despliegue exitoso!"
-    log_info "📱 Frontend disponible en: http://localhost:8080"
-    log_info "🔧 Backend API disponible en: http://localhost:3010"
-    log_info "🗄️  Base de datos PostgreSQL en puerto: 5432"
+    log_info "Despliegue exitoso!"
+    log_info "Frontend disponible en: http://localhost:8080"
+    log_info "Backend API disponible en: http://localhost:3010"
+    log_info " Base de datos PostgreSQL en puerto: 5432"
 else
-    log_error "❌ Error en el despliegue. Verificando logs..."
+    log_error "Error en el despliegue. Verificando logs..."
     docker-compose -f docker-compose.prod.yml logs
 fi
 

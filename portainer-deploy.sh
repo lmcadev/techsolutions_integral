@@ -72,7 +72,7 @@ get_portainer_token() {
 
 #  Función para listar stacks
 list_stacks() {
-    log_header "📋 Listando stacks de Portainer"
+    log_header "Listando stacks de Portainer"
     
     TOKEN=$(get_portainer_token)
     

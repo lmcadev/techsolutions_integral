@@ -1,6 +1,6 @@
 # TechSolutions Integral
 
-Aplicación web completa que incluye frontend desarrollado en Angular 17 y backend API en Node.js/Express. Sistema integral para gestión de usuarios y servicios con autenticación JWT.
+Aplicación web completa que incluye frontend desarrollado en Angular 17, backend API en Node.js/Express y usando PostgreSQL como base de datos. Sistema integral para gestión de usuarios y servicios con autenticación JWT.
 
 ##  Arquitectura del Proyecto
 
