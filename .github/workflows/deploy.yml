@@ -287,13 +287,12 @@ jobs:
           echo "Local Environment ID: $LOCAL_ENV_ID"
           
           # Crear nuevo stack usando compose/docker-compose
-          RESPONSE=$(curl -s -w "%{http_code}" -X POST "$PORTAINER_URL/api/stacks/create/standalone/string" \
+          RESPONSE=$(curl -s -w "%{http_code}" -X POST "$PORTAINER_URL/api/stacks/create/standalone/string?endpointId=$LOCAL_ENV_ID" \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{
               \"name\": \"${{ env.PORTAINER_STACK_NAME }}\",
-              \"stackFileContent\": $DOCKER_COMPOSE_CONTENT,
-              \"endpointId\": $LOCAL_ENV_ID
+              \"stackFileContent\": $DOCKER_COMPOSE_CONTENT
             }")
           
           HTTP_STATUS="${RESPONSE: -3}"
@@ -315,12 +314,11 @@ jobs:
           echo "Actualizando stack existente (ID: $STACK_ID)..."
           
           # Actualizar stack existente
-          UPDATE_RESPONSE=$(curl -s -w "%{http_code}" -X PUT "$PORTAINER_URL/api/stacks/$STACK_ID" \
+          UPDATE_RESPONSE=$(curl -s -w "%{http_code}" -X PUT "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$LOCAL_ENV_ID" \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{
-              \"stackFileContent\": $DOCKER_COMPOSE_CONTENT,
-              \"endpointId\": $LOCAL_ENV_ID
+              \"stackFileContent\": $DOCKER_COMPOSE_CONTENT
             }")
           
           UPDATE_HTTP_STATUS="${UPDATE_RESPONSE: -3}"
