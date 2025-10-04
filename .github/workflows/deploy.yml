@@ -204,14 +204,36 @@ jobs:
 
     - name: Deploy a Portainer
       run: |
-        # Obtener token de Portainer
-        ACCESS_TOKEN=$(curl -X POST "${{ secrets.PORTAINER_URL }}/api/auth" \
-          -H "Content-Type: application/json" \
-          -d '{"Username": "${{ secrets.PORTAINER_USERNAME }}", "Password": "${{ secrets.PORTAINER_PASSWORD }}"}' \
-          | jq -r .jwt)
+        # Verificar conectividad a Portainer
+        echo "Verificando conectividad a Portainer..."
+        echo "URL: ${{ secrets.PORTAINER_URL }}/api/auth"
         
-        if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
-          echo "Error: No se pudo obtener token de Portainer"
+        # Obtener token de Portainer con manejo de errores
+        echo "Intentando autenticación con Portainer..."
+        AUTH_RESPONSE=$(curl -s -w "%{http_code}" -X POST "${{ secrets.PORTAINER_URL }}/api/auth" \
+          -H "Content-Type: application/json" \
+          -d '{"Username": "${{ secrets.PORTAINER_USERNAME }}", "Password": "${{ secrets.PORTAINER_PASSWORD }}"}')
+        
+        HTTP_STATUS="${AUTH_RESPONSE: -3}"
+        RESPONSE_BODY="${AUTH_RESPONSE%???}"
+        
+        echo "HTTP Status: $HTTP_STATUS"
+        echo "Response: $RESPONSE_BODY"
+        
+        if [ "$HTTP_STATUS" != "200" ]; then
+          echo "Error: Falló la autenticación con Portainer (Status: $HTTP_STATUS)"
+          echo "Verificar:"
+          echo "  - URL de Portainer: ${{ secrets.PORTAINER_URL }}"
+          echo "  - Credenciales de Portainer"
+          echo "  - Conectividad de red"
+          exit 1
+        fi
+        
+        ACCESS_TOKEN=$(echo "$RESPONSE_BODY" | jq -r .jwt 2>/dev/null)
+        
+        if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" = "" ]; then
+          echo "Error: No se pudo extraer el token JWT de la respuesta"
+          echo "Respuesta completa: $RESPONSE_BODY"
           exit 1
         fi
         
@@ -262,17 +284,31 @@ jobs:
         sleep 60
         
         # Obtener token de Portainer para verificación
-        ACCESS_TOKEN=$(curl -X POST "${{ secrets.PORTAINER_URL }}/api/auth" \
+        echo "Obteniendo token para verificación..."
+        AUTH_RESPONSE=$(curl -s -w "%{http_code}" -X POST "${{ secrets.PORTAINER_URL }}/api/auth" \
           -H "Content-Type: application/json" \
-          -d '{"Username": "${{ secrets.PORTAINER_USERNAME }}", "Password": "${{ secrets.PORTAINER_PASSWORD }}"}' \
-          | jq -r .jwt)
+          -d '{"Username": "${{ secrets.PORTAINER_USERNAME }}", "Password": "${{ secrets.PORTAINER_PASSWORD }}"}')
         
-        # Verificar estado del stack
-        STACK_STATUS=$(curl -X GET "${{ secrets.PORTAINER_URL }}/api/stacks" \
-          -H "Authorization: Bearer $ACCESS_TOKEN" \
-          | jq -r '.[] | select(.Name == "${{ env.PORTAINER_STACK_NAME }}") | .Status')
+        HTTP_STATUS="${AUTH_RESPONSE: -3}"
+        RESPONSE_BODY="${AUTH_RESPONSE%???}"
         
-        echo "Estado del stack: $STACK_STATUS"
+        if [ "$HTTP_STATUS" != "200" ]; then
+          echo "Warning: No se pudo obtener token para verificación (Status: $HTTP_STATUS)"
+          echo "Saltando verificación de Portainer API..."
+        else
+          ACCESS_TOKEN=$(echo "$RESPONSE_BODY" | jq -r .jwt 2>/dev/null)
+        fi
+        
+        # Verificar estado del stack solo si tenemos token válido
+        if [ "$ACCESS_TOKEN" != "null" ] && [ ! -z "$ACCESS_TOKEN" ]; then
+          STACK_STATUS=$(curl -s -X GET "${{ secrets.PORTAINER_URL }}/api/stacks" \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            | jq -r '.[] | select(.Name == "${{ env.PORTAINER_STACK_NAME }}") | .Status' 2>/dev/null)
+          
+          echo "Estado del stack: $STACK_STATUS"
+        else
+          echo "Sin token válido, saltando verificación de stack"
+        fi
         
         # Verificar que la aplicación responda
         echo "Verificando health de la aplicación..."
@@ -329,11 +365,22 @@ jobs:
         echo "Rama: ${{ env.BRANCH }}"
         echo "Stack: ${{ env.PORTAINER_STACK_NAME }}"
         
-        # Obtener token de Portainer
-        ACCESS_TOKEN=$(curl -X POST "${{ secrets.PORTAINER_URL }}/api/auth" \
+        # Obtener token de Portainer para rollback
+        echo "Obteniendo token para rollback..."
+        AUTH_RESPONSE=$(curl -s -w "%{http_code}" -X POST "${{ secrets.PORTAINER_URL }}/api/auth" \
           -H "Content-Type: application/json" \
-          -d '{"Username": "${{ secrets.PORTAINER_USERNAME }}", "Password": "${{ secrets.PORTAINER_PASSWORD }}"}' \
-          | jq -r .jwt)
+          -d '{"Username": "${{ secrets.PORTAINER_USERNAME }}", "Password": "${{ secrets.PORTAINER_PASSWORD }}"}')
+        
+        HTTP_STATUS="${AUTH_RESPONSE: -3}"
+        RESPONSE_BODY="${AUTH_RESPONSE%???}"
+        
+        if [ "$HTTP_STATUS" != "200" ]; then
+          echo "Error: No se pudo obtener token para rollback (Status: $HTTP_STATUS)"
+          echo "Rollback manual requerido en Portainer"
+          exit 1
+        fi
+        
+        ACCESS_TOKEN=$(echo "$RESPONSE_BODY" | jq -r .jwt 2>/dev/null)
         
         # Obtener ID del stack
         STACK_ID=$(curl -X GET "${{ secrets.PORTAINER_URL }}/api/stacks" \
