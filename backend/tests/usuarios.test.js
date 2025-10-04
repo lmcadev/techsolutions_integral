@@ -100,8 +100,23 @@ describe('Usuarios Endpoints', () => {
 
   describe('DELETE /api/usuarios/:id', () => {
     it('should delete existing usuario', async () => {
+      // Primero crear un usuario para eliminar
+      const nuevoUsuario = {
+        nombre: 'Usuario Para Eliminar',
+        correo: 'eliminar@test.com',
+        password: 'password123'
+      };
+
+      const createRes = await request(app)
+        .post('/api/usuarios')
+        .set('Authorization', `Bearer ${token}`)
+        .send(nuevoUsuario);
+
+      const usuarioId = createRes.body.data.id;
+
+      // Ahora eliminar el usuario creado
       const res = await request(app)
-        .delete('/api/usuarios/1')
+        .delete(`/api/usuarios/${usuarioId}`)
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.statusCode).toBe(200);
