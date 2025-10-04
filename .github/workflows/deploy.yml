@@ -100,9 +100,9 @@ jobs:
               # API and Dashboard
               - --api.dashboard=true
               - --api.insecure=false
-              # EntryPoints (puertos alternativos para evitar conflicto con CloudPanel)
-              - --entrypoints.web.address=:8080
-              - --entrypoints.websecure.address=:8443
+              # EntryPoints (puertos libres confirmados por test)
+              - --entrypoints.web.address=:9080
+              - --entrypoints.websecure.address=:9443
               # Docker provider
               - --providers.docker=true
               - --providers.docker.exposedbydefault=false
@@ -120,8 +120,8 @@ jobs:
               - --log.level=INFO
               - --accesslog=true
             ports:
-              - "8080:8080"
-              - "8443:8443"
+              - "9080:9080"
+              - "9443:9443"
             volumes:
               - /var/run/docker.sock:/var/run/docker.sock:ro
               - traefik_letsencrypt:/letsencrypt
@@ -129,7 +129,7 @@ jobs:
               - techsolutions_network
             restart: unless-stopped
             healthcheck:
-              test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/ping"]
+              test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9080/ping"]
               interval: 30s
               timeout: 10s
               retries: 3
