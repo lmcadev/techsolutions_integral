@@ -39,7 +39,8 @@ describe('Usuarios Endpoints', () => {
     it('should create new usuario with valid data', async () => {
       const nuevoUsuario = {
         nombre: 'Test Usuario',
-        correo: 'test@example.com'
+        correo: 'test@example.com',
+        password: 'testpass123'
       };
 
       const res = await request(app)
@@ -70,7 +71,8 @@ describe('Usuarios Endpoints', () => {
     it('should update existing usuario', async () => {
       const usuarioActualizado = {
         nombre: 'Usuario Actualizado',
-        correo: 'actualizado@example.com'
+        correo: 'actualizado@example.com',
+        rol: 'user'
       };
 
       const res = await request(app)
@@ -88,7 +90,8 @@ describe('Usuarios Endpoints', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           nombre: 'Test',
-          correo: 'test@example.com'
+          correo: 'test@example.com',
+          rol: 'user'
         });
 
       expect(res.statusCode).toBe(404);
