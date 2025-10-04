@@ -7,7 +7,7 @@ describe('Auth Endpoints', () => {
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'admin@techsolutions.com',
+          correo: 'admin@techsolutions.com',
           password: 'admin123'
         });
 
@@ -21,7 +21,7 @@ describe('Auth Endpoints', () => {
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'admin@techsolutions.com',
+          correo: 'admin@techsolutions.com',
           password: 'wrongpassword'
         });
 
@@ -33,7 +33,7 @@ describe('Auth Endpoints', () => {
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'invalid-email',
+          correo: 'invalid-email',
           password: 'admin123'
         });
 
@@ -49,7 +49,7 @@ describe('Auth Endpoints', () => {
       const loginRes = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'admin@techsolutions.com',
+          correo: 'admin@techsolutions.com',
           password: 'admin123'
         });
       token = loginRes.body.token;

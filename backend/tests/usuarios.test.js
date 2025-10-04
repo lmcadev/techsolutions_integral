@@ -9,7 +9,7 @@ describe('Usuarios Endpoints', () => {
     const loginRes = await request(app)
       .post('/api/auth/login')
       .send({
-        email: 'admin@techsolutions.com',
+        correo: 'admin@techsolutions.com',
         password: 'admin123'
       });
     token = loginRes.body.token;
