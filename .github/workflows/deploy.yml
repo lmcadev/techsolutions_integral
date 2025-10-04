@@ -100,9 +100,9 @@ jobs:
               # API and Dashboard
               - --api.dashboard=true
               - --api.insecure=false
-              # EntryPoints
-              - --entrypoints.web.address=:80
-              - --entrypoints.websecure.address=:443
+              # EntryPoints (puertos alternativos para evitar conflicto con CloudPanel)
+              - --entrypoints.web.address=:8080
+              - --entrypoints.websecure.address=:8443
               # Docker provider
               - --providers.docker=true
               - --providers.docker.exposedbydefault=false
@@ -112,16 +112,16 @@ jobs:
               - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
               # Security headers
               - --entrypoints.websecure.http.middlewares=security-headers@docker
-              # Global HTTP to HTTPS redirect
-              - --entrypoints.web.http.redirections.entrypoint.to=websecure
-              - --entrypoints.web.http.redirections.entrypoint.scheme=https
-              - --entrypoints.web.http.redirections.entrypoint.permanent=true
+              # Global HTTP to HTTPS redirect (comentado ya que CloudPanel maneja SSL)
+              # - --entrypoints.web.http.redirections.entrypoint.to=websecure
+              # - --entrypoints.web.http.redirections.entrypoint.scheme=https
+              # - --entrypoints.web.http.redirections.entrypoint.permanent=true
               # Logging
               - --log.level=INFO
               - --accesslog=true
             ports:
-              - "80:80"
-              - "443:443"
+              - "8080:8080"
+              - "8443:8443"
             volumes:
               - /var/run/docker.sock:/var/run/docker.sock:ro
               - traefik_letsencrypt:/letsencrypt
@@ -181,7 +181,7 @@ jobs:
               - "traefik.http.routers.techsolutions-api.rule=Host(\`${{ env.DOMAIN }}\`) && PathPrefix(\`/api\`)"
               - "traefik.http.routers.techsolutions-api.tls=true"
               - "traefik.http.routers.techsolutions-api.tls.certresolver=letsencrypt"
-              - "traefik.http.routers.techsolutions-api.entrypoints=websecure"
+              - "traefik.http.routers.techsolutions-api.entrypoints=web,websecure"
               - "traefik.http.routers.techsolutions-api.middlewares=security-headers"
               - "traefik.http.services.techsolutions-api.loadbalancer.server.port=3000"
               # Rate limiting para API
@@ -207,7 +207,7 @@ jobs:
               - "traefik.http.routers.techsolutions-frontend.rule=Host(\`${{ env.DOMAIN }}\`)"
               - "traefik.http.routers.techsolutions-frontend.tls=true"
               - "traefik.http.routers.techsolutions-frontend.tls.certresolver=letsencrypt"
-              - "traefik.http.routers.techsolutions-frontend.entrypoints=websecure"
+              - "traefik.http.routers.techsolutions-frontend.entrypoints=web,websecure"
               - "traefik.http.routers.techsolutions-frontend.middlewares=security-headers"
               - "traefik.http.services.techsolutions-frontend.loadbalancer.server.port=80"
               # Priority para que no conflicte con API
