@@ -92,6 +92,62 @@ jobs:
         version: '3.8'
 
         services:
+          # Traefik Reverse Proxy
+          traefik:
+            image: traefik:v3.1
+            container_name: techsolutions_traefik
+            command:
+              # API and Dashboard
+              - --api.dashboard=true
+              - --api.insecure=false
+              # EntryPoints
+              - --entrypoints.web.address=:80
+              - --entrypoints.websecure.address=:443
+              # Docker provider
+              - --providers.docker=true
+              - --providers.docker.exposedbydefault=false
+              # SSL/TLS with Let's Encrypt
+              - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+              - --certificatesresolvers.letsencrypt.acme.email=admin@${{ env.DOMAIN }}
+              - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+              # Security headers
+              - --entrypoints.websecure.http.middlewares=security-headers@docker
+              # Global HTTP to HTTPS redirect
+              - --entrypoints.web.http.redirections.entrypoint.to=websecure
+              - --entrypoints.web.http.redirections.entrypoint.scheme=https
+              - --entrypoints.web.http.redirections.entrypoint.permanent=true
+              # Logging
+              - --log.level=INFO
+              - --accesslog=true
+            ports:
+              - "80:80"
+              - "443:443"
+            volumes:
+              - /var/run/docker.sock:/var/run/docker.sock:ro
+              - traefik_letsencrypt:/letsencrypt
+            networks:
+              - techsolutions_network
+            restart: unless-stopped
+            healthcheck:
+              test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/ping"]
+              interval: 30s
+              timeout: 10s
+              retries: 3
+              start_period: 60s
+            labels:
+              # Dashboard (opcional, solo para admin)
+              - "traefik.enable=true"
+              - "traefik.http.routers.traefik-dashboard.rule=Host(\`traefik.${{ env.DOMAIN }}\`)"
+              - "traefik.http.routers.traefik-dashboard.tls=true"
+              - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
+              - "traefik.http.routers.traefik-dashboard.service=api@internal"
+              # Security headers middleware
+              - "traefik.http.middlewares.security-headers.headers.frameDeny=true"
+              - "traefik.http.middlewares.security-headers.headers.contentTypeNosniff=true"
+              - "traefik.http.middlewares.security-headers.headers.browserXssFilter=true"
+              - "traefik.http.middlewares.security-headers.headers.stsSeconds=31536000"
+              - "traefik.http.middlewares.security-headers.headers.stsIncludeSubdomains=true"
+              - "traefik.http.middlewares.security-headers.headers.stsPreload=true"
           # Backend API
           backend:
             image: ghcr.io/${{ github.repository_owner }}/techsolutions-backend:${{ github.sha }}
@@ -125,7 +181,13 @@ jobs:
               - "traefik.http.routers.techsolutions-api.rule=Host(\`${{ env.DOMAIN }}\`) && PathPrefix(\`/api\`)"
               - "traefik.http.routers.techsolutions-api.tls=true"
               - "traefik.http.routers.techsolutions-api.tls.certresolver=letsencrypt"
+              - "traefik.http.routers.techsolutions-api.entrypoints=websecure"
+              - "traefik.http.routers.techsolutions-api.middlewares=security-headers"
               - "traefik.http.services.techsolutions-api.loadbalancer.server.port=3000"
+              # Rate limiting para API
+              - "traefik.http.middlewares.api-ratelimit.ratelimit.burst=100"
+              - "traefik.http.middlewares.api-ratelimit.ratelimit.average=10"
+              - "traefik.http.routers.techsolutions-api.middlewares=security-headers,api-ratelimit"
 
           # Frontend Angular
           frontend:
@@ -145,7 +207,11 @@ jobs:
               - "traefik.http.routers.techsolutions-frontend.rule=Host(\`${{ env.DOMAIN }}\`)"
               - "traefik.http.routers.techsolutions-frontend.tls=true"
               - "traefik.http.routers.techsolutions-frontend.tls.certresolver=letsencrypt"
+              - "traefik.http.routers.techsolutions-frontend.entrypoints=websecure"
+              - "traefik.http.routers.techsolutions-frontend.middlewares=security-headers"
               - "traefik.http.services.techsolutions-frontend.loadbalancer.server.port=80"
+              # Priority para que no conflicte con API
+              - "traefik.http.routers.techsolutions-frontend.priority=1"
 
           # PostgreSQL DB
           db:
@@ -174,6 +240,8 @@ jobs:
 
         volumes:
           db_data:
+            driver: local
+          traefik_letsencrypt:
             driver: local
         EOF
 
